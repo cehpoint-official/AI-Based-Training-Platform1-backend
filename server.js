@@ -22,7 +22,7 @@ const showdown = require("showdown");
 //INITIALIZE
 const app = express();
 const allowedOrigins = [
-  "http://localhost:3000",
+  "http://localhost:5173",
   "https://ai-based-training-platfo-ca895.web.app",
   "https://ai-based-training-by-ariba-2d081.web.app",
 ];
@@ -42,6 +42,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 const PORT = process.env.PORT;
 app.use(bodyParser.json());
+
 mongoose
   .connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
@@ -62,6 +63,7 @@ const transporter = nodemailer.createTransport({
     pass: process.env.PASSWORD,
   },
 });
+
 const genAI = new GoogleGenerativeAI(process.env.API_KEY);
 const unsplash = createApi({ accessKey: process.env.UNSPLASH_ACCESS_KEY });
 
@@ -75,6 +77,7 @@ const userSchema = new mongoose.Schema({
   resetPasswordToken: { type: String, default: null },
   resetPasswordExpires: { type: Date, default: null },
 });
+
 const courseSchema = new mongoose.Schema({
   user: String,
   content: { type: String, required: true },
@@ -344,18 +347,15 @@ app.post("/api/prompt", async (req, res) => {
 
   const prompt = promptString;
 
-  await model
-    .generateContent(prompt)
-    .then((result) => {
-      const response = result.response;
-      const generatedText = response.text();
-      res.status(200).json({ generatedText });
-    })
-    .catch((error) => {
-      res
-        .status(500)
-        .json({ success: false, message: "Internal server error" });
-    });
+  try {
+    const result = await model.generateContent(prompt);
+
+    const generatedText = result.response.text();
+    res.status(200).json({ generatedText });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
 });
 
 //GET GENERATE THEORY
