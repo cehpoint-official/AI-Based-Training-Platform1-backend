@@ -16,7 +16,7 @@ const {
 } = require("@google/generative-ai");
 const { createApi } = require("unsplash-js");
 const showdown = require("showdown");
-// const functions = require("firebase-functions");
+const functions = require("firebase-functions");
 // const axios = require('axios');
 
 //INITIALIZE
@@ -458,30 +458,25 @@ app.post("/api/transcript", async (req, res) => {
 app.post("/api/course", async (req, res) => {
   const { user, content, type, mainTopic } = req.body;
 
-  unsplash.search
-    .getPhotos({
+  try {
+    const result = await unsplash.search.getPhotos({
       query: mainTopic,
       page: 1,
       perPage: 1,
       orientation: "landscape",
-    })
-    .then(async (result) => {
-      const photos = result.response.results;
-      const photo = photos[0].urls.regular;
-      try {
-        const newCourse = new Course({ user, content, type, mainTopic, photo });
-        await newCourse.save();
-        res.json({
-          success: true,
-          message: "Course created successfully",
-          courseId: newCourse._id,
-        });
-      } catch (error) {
-        res
-          .status(500)
-          .json({ success: false, message: "Internal server error" });
-      }
     });
+    const photos = result.response?.results;
+    const photo = photos[0]?.urls?.regular;
+    const newCourse = new Course({ user, content, type, mainTopic, photo });
+    await newCourse.save();
+    res.json({
+      success: true,
+      message: "Course created successfully",
+      courseId: newCourse._id,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
 });
 
 //UPDATE COURSE
@@ -665,8 +660,8 @@ app.post("/api/project-suggestions", async (req, res) => {
   }
 });
 
-const AppPort = 5000 || process.env.PORT;
+const AppPort = process.env.PORT || 5000;
 app.listen(AppPort, () => {
-  console.log("Server is running on port 5000");
+  console.log(`Server is running on port ${AppPort}`);
 });
-// exports.api = functions.https.onRequest(app);
+exports.api = functions.https.onRequest(app);
