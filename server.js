@@ -73,6 +73,10 @@ const userSchema = new mongoose.Schema({
   email: { type: String, unique: true, required: true },
   mName: String,
   password: String,
+  role: {
+    type: String,
+    default: "admin",
+  },
   type: String,
   resetPasswordToken: { type: String, default: null },
   resetPasswordExpires: { type: Date, default: null },
@@ -194,6 +198,23 @@ app.post("/api/signin", async (req, res) => {
   }
 });
 
+app.post("/api/dashboard", async (req, res) => {
+  try {
+    // Fetch the admin from the database (for simplicity, we'll assume there's only one admin)
+    const admin = await User.findOne(req.body); // You can modify this to look up specific admins
+
+    // If no admin is found, return a 404 error
+    if (!admin) {
+      return res.status(404).json({ message: "Admin not found" });
+    }
+
+    // Send the admin data back to the frontend
+    res.json({ admin });
+  } catch (error) {
+    // Handle errors and send a 500 status
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+});
 //SEND MAIL
 app.post("/api/data", async (req, res) => {
   const receivedData = req.body;
@@ -660,8 +681,8 @@ app.post("/api/project-suggestions", async (req, res) => {
   }
 });
 
-const AppPort = process.env.PORT || 5000;
-app.listen(AppPort, () => {
-  console.log(`Server is running on port ${AppPort}`);
+const AppPort = 5000;
+app.listen(5000, () => {
+  console.log(`Server is running on port ${5000}`);
 });
 exports.api = functions.https.onRequest(app);
