@@ -25,6 +25,7 @@ const allowedOrigins = [
   "http://localhost:5173",
   "https://ai-based-training-platfo-ca895.web.app",
   "https://ai-based-training-by-ariba-2d081.web.app",
+  "https://ai-skill-enhancement-and-job-readiness.cehpoint.co.in",
 ];
 
 const corsOptions = {
@@ -685,4 +686,5 @@ const AppPort = 5000;
 app.listen(5000, () => {
   console.log(`Server is running on port ${5000}`);
 });
+
 exports.api = functions.https.onRequest(app);
