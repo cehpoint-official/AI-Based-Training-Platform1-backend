@@ -433,13 +433,19 @@ app.post("/api/generate", async (req, res) => {
 app.post("/api/image", async (req, res) => {
   const receivedData = req.body;
   const promptString = receivedData.prompt;
-  gis(promptString, logResults);
-  function logResults(error, results) {
-    if (error) {
-      //ERROR
-    } else {
-      res.status(200).json({ url: results[0].url });
+  try {
+    gis(promptString, logResults);
+    function logResults(error, results) {
+      if (error) {
+        //ERROR
+        console.log(error);
+        gis("Broken Image", logResults);
+      } else {
+        res.status(200).json({ url: results[0].url });
+      }
     }
+  } catch (e) {
+    console.log(e);
   }
 });
 
