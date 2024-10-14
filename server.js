@@ -76,6 +76,8 @@ const userSchema = new mongoose.Schema({
   type: String,
   resetPasswordToken: { type: String, default: null },
   resetPasswordExpires: { type: Date, default: null },
+  geminiKey: { type: String }, // Add these fields to store API keys
+  unsplashKey: { type: String }
 });
 
 const courseSchema = new mongoose.Schema({
@@ -87,6 +89,7 @@ const courseSchema = new mongoose.Schema({
   date: { type: Date, default: Date.now },
   end: { type: Date, default: Date.now },
   completed: { type: Boolean, default: false },
+
 });
 
 //MODEL
@@ -659,6 +662,30 @@ app.post("/api/project-suggestions", async (req, res) => {
     res.status(500).send("Error generating project suggestions");
   }
 });
+
+app.get('/api-keys', async (req, res) => {
+  try {
+    const user = await User.findById(req.user.email); 
+    res.json({ geminiKey: user.geminiKey, unsplashKey: user.unsplashKey });
+  } catch (err) {
+    res.status(500).send('Server Error');
+  }
+});
+
+app.post('/api-keys', async (req, res) => {
+  const { geminiKey, unsplashKey } = req.body;
+
+  try {
+    const user = await User.findById(req.user.email);
+    user.geminiKey = geminiKey;
+    user.unsplashKey = unsplashKey;
+    await user.save();
+    res.json({ message: 'API keys updated successfully' });
+  } catch (err) {
+    res.status(500).send('Server Error');
+  }
+});
+
 
 const AppPort = process.env.PORT || 5000;
 app.listen(AppPort, () => {
