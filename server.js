@@ -432,7 +432,7 @@ app.post("/api/generate", async (req, res) => {
           const converter = new showdown.Converter();
           const markdownText = txt;
           const text = converter.makeHtml(markdownText);
-          console.log("response from user apikey");
+          // console.log("response from user apikey"); for testing only
           res.status(200).json({ text });
         })
     } catch (error) {
@@ -455,7 +455,7 @@ app.post("/api/generate", async (req, res) => {
           const converter = new showdown.Converter();
           const markdownText = txt;
           const text = converter.makeHtml(markdownText);
-          console.log("response from default apikey");
+          // console.log("response from default apikey"); for testing only
           res.status(200).json({ text });
         })
     } catch (error) {
