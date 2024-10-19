@@ -342,17 +342,6 @@ app.post("/api/prompt", async (req, res) => {
       threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
     },
   ];
-  //update to initailize new genAi using user provided api key
-  // const model = useUserApiKey
-  // ? genAI.getGenerativeModel({
-  //     model: "gemini-pro",
-  //     apiKey: userApiKey, // Use user-provided API key
-  //     safetySettings,
-  // })
-  // : genAI.getGenerativeModel({
-  //     model: "gemini-pro", // Default model
-  //     safetySettings,
-  // });
     // const model = genAI.getGenerativeModel({
   //   model: "gemini-pro",
   //   safetySettings,
@@ -399,6 +388,8 @@ app.post("/api/generate", async (req, res) => {
   const receivedData = req.body;
 
   const promptString = receivedData.prompt;
+  const useUserApiKey = receivedData.useUserApiKey || false;
+  const userApiKey = receivedData.userApiKey || null;
 
   const safetySettings = [
     {
@@ -419,28 +410,59 @@ app.post("/api/generate", async (req, res) => {
     },
   ];
 
-  const model = genAI.getGenerativeModel({
-    model: "gemini-pro",
-    safetySettings,
-  });
-
-  const prompt = promptString;
-
-  await model
-    .generateContent(prompt)
-    .then((result) => {
-      const response = result.response;
-      const txt = response.text();
-      const converter = new showdown.Converter();
-      const markdownText = txt;
-      const text = converter.makeHtml(markdownText);
-      res.status(200).json({ text });
+  // const model = genAI.getGenerativeModel({
+  //   model: "gemini-pro",
+  //   safetySettings,
+  // });
+  let genAIuser;
+  if(useUserApiKey && userApiKey!==null){
+    genAIuser=new GoogleGenerativeAI(userApiKey);
+    const model=genAIuser.getGenerativeModel({
+      model:"gemini-pro",
+      safetySettings
     })
-    .catch((error) => {
-      res
-        .status(500)
-        .json({ success: false, message: "Internal server error" });
+    const prompt = promptString;
+
+    try {
+      await model
+        .generateContent(prompt)
+        .then((result) => {
+          const response = result.response;
+          const txt = response.text();
+          const converter = new showdown.Converter();
+          const markdownText = txt;
+          const text = converter.makeHtml(markdownText);
+          console.log("response from user apikey");
+          res.status(200).json({ text });
+        })
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ success: false, message: "Internal server error" });
+    }
+  }
+  else{
+    const model = genAI.getGenerativeModel({
+      model: "gemini-pro",
+      safetySettings,
     });
+    try {
+      const prompt = promptString;
+      await model
+        .generateContent(prompt)
+        .then((result) => {
+          const response = result.response;
+          const txt = response.text();
+          const converter = new showdown.Converter();
+          const markdownText = txt;
+          const text = converter.makeHtml(markdownText);
+          console.log("response from default apikey");
+          res.status(200).json({ text });
+        })
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ success: false, message: "Internal server error" });
+    }
+  }
 });
 
 //GET IMAGE
