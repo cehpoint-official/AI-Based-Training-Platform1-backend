@@ -17,7 +17,9 @@ const {
 const { createApi } = require("unsplash-js");
 const showdown = require("showdown");
 const functions = require("firebase-functions");
+const connectDB = require("./config/db");
 // const axios = require('axios');
+connectDB();
 
 //INITIALIZE
 const app = express();
@@ -43,16 +45,6 @@ const corsOptions = {
 app.use(cors(corsOptions));
 const PORT = process.env.PORT;
 app.use(bodyParser.json());
-
-mongoose
-  .connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => {
-    console.log("Mongo Db Connected ");
-  })
-  .catch((err) => console.log(err));
 
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
@@ -452,10 +444,10 @@ app.post("/api/image", async (req, res) => {
 //GET VIDEO
 app.post("/api/yt", async (req, res) => {
   try {
-    const receivedData = req.body;
-    const promptString = receivedData.prompt;
+    const { prompt } = req.body;
+
     const video = await youtubesearchapi.GetListByKeyword(
-      promptString,
+      prompt,
       [false],
       [1],
       [{ type: "video" }]
@@ -469,17 +461,29 @@ app.post("/api/yt", async (req, res) => {
 
 //GET TRANSCRIPT
 app.post("/api/transcript", async (req, res) => {
-  const receivedData = req.body;
-  const promptString = receivedData.prompt;
-  YoutubeTranscript.fetchTranscript(promptString)
-    .then((video) => {
-      res.status(200).json({ url: video });
-    })
-    .catch((error) => {
-      res
-        .status(500)
-        .json({ success: false, message: "Internal server error" });
-    });
+  try {
+    const { prompt } = req.body;
+
+    const transcript = await YoutubeTranscript.fetchTranscript(prompt);
+
+    // Check if transcript is empty
+    if (!transcript || transcript.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Transcript is disabled or not available for this video.",
+      });
+    }
+
+    res.status(200).json({ url: transcript });
+  } catch (error) {
+    if (error.message.includes("Transcript is disabled")) {
+      return res.status(403).json({
+        success: false,
+        message: "Transcript is disabled on this video.",
+      });
+    }
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
 });
 
 //STORE COURSE
