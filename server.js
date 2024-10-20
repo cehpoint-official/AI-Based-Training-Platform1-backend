@@ -73,6 +73,7 @@ const userSchema = new mongoose.Schema({
   type: String,
   resetPasswordToken: { type: String, default: null },
   resetPasswordExpires: { type: Date, default: null },
+  apiKey: { type: String, default: null }
 });
 
 const courseSchema = new mongoose.Schema({
@@ -334,6 +335,8 @@ app.post("/api/prompt", async (req, res) => {
   const receivedData = req.body;
 
   const promptString = receivedData.prompt;
+  const useUserApiKey = receivedData.useUserApiKey || false;
+  const userApiKey = receivedData.userApiKey || null;
 
   const safetySettings = [
     {
@@ -353,22 +356,44 @@ app.post("/api/prompt", async (req, res) => {
       threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
     },
   ];
+    // const model = genAI.getGenerativeModel({
+  //   model: "gemini-pro",
+  //   safetySettings,
+  // });
+  let genAIuser;
+  if(useUserApiKey && userApiKey!==null){
+    genAIuser=new GoogleGenerativeAI(userApiKey);
+    const model=genAIuser.getGenerativeModel({
+      model:"gemini-pro",
+      safetySettings
+    })
+    const prompt = promptString;
 
-  const model = genAI.getGenerativeModel({
-    model: "gemini-pro",
-    safetySettings,
-  });
-
-  const prompt = promptString;
-
-  try {
-    const result = await model.generateContent(prompt);
-
-    const generatedText = result.response.text();
-    res.status(200).json({ generatedText });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    try {
+      const result = await model.generateContent(prompt);
+      console.log("response using user api key");
+      const generatedText = result.response.text();
+      res.status(200).json({ generatedText });
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ success: false, message: "Internal server error" });
+    }
+  }
+  else{
+    const model = genAI.getGenerativeModel({
+      model: "gemini-pro",
+      safetySettings,
+    });
+    const prompt = promptString;
+    try {
+      const result = await model.generateContent(prompt);
+      console.log("response using default api key");
+      const generatedText = result.response.text();
+      res.status(200).json({ generatedText });
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ success: false, message: "Internal server error" });
+    }
   }
 });
 
@@ -377,6 +402,8 @@ app.post("/api/generate", async (req, res) => {
   const receivedData = req.body;
 
   const promptString = receivedData.prompt;
+  const useUserApiKey = receivedData.useUserApiKey || false;
+  const userApiKey = receivedData.userApiKey || null;
 
   const safetySettings = [
     {
@@ -397,49 +424,82 @@ app.post("/api/generate", async (req, res) => {
     },
   ];
 
-  const model = genAI.getGenerativeModel({
-    model: "gemini-pro",
-    safetySettings,
-  });
-
-  const prompt = promptString;
-
-  await model
-    .generateContent(prompt)
-    .then((result) => {
-      const response = result.response;
-      const txt = response.text();
-      const converter = new showdown.Converter();
-      const markdownText = txt;
-      const text = converter.makeHtml(markdownText);
-      res.status(200).json({ text });
+  // const model = genAI.getGenerativeModel({
+  //   model: "gemini-pro",
+  //   safetySettings,
+  // });
+  let genAIuser;
+  if(useUserApiKey && userApiKey!==null){
+    genAIuser=new GoogleGenerativeAI(userApiKey);
+    const model=genAIuser.getGenerativeModel({
+      model:"gemini-pro",
+      safetySettings
     })
-    .catch((error) => {
-      res
-        .status(500)
-        .json({ success: false, message: "Internal server error" });
+    const prompt = promptString;
+
+    try {
+      await model
+        .generateContent(prompt)
+        .then((result) => {
+          const response = result.response;
+          const txt = response.text();
+          const converter = new showdown.Converter();
+          const markdownText = txt;
+          const text = converter.makeHtml(markdownText);
+          // console.log("response from user apikey"); for testing only
+          res.status(200).json({ text });
+        })
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ success: false, message: "Internal server error" });
+    }
+  }
+  else{
+    const model = genAI.getGenerativeModel({
+      model: "gemini-pro",
+      safetySettings,
     });
+    try {
+      const prompt = promptString;
+      await model
+        .generateContent(prompt)
+        .then((result) => {
+          const response = result.response;
+          const txt = response.text();
+          const converter = new showdown.Converter();
+          const markdownText = txt;
+          const text = converter.makeHtml(markdownText);
+          // console.log("response from default apikey"); for testing only
+          res.status(200).json({ text });
+        })
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ success: false, message: "Internal server error" });
+    }
+  }
 });
 
 //GET IMAGE
 app.post("/api/image", async (req, res) => {
   const receivedData = req.body;
   const promptString = receivedData.prompt;
-  try {
-    gis(promptString, logResults);
-    function logResults(error, results) {
-      if (error) {
-        //ERROR
-        console.log(error);
-        gis("Broken Image", logResults);
-      } else {
-        res.status(200).json({ url: results[0].url });
-      }
+try{
+  gis(promptString, logResults);
+
+  function logResults(error, results) {
+    if (error || !results || results.length === 0) {
+      // If there's an error or no results, set a random image URL
+      const defaultImageUrl = "https://via.placeholder.com/150";
+      res.status(200).json({ url: defaultImageUrl });
+    } else {
+      res.status(200).json({ url: results[0].url });
+
     }
   } catch (e) {
     console.log(e);
   }
 });
+
 
 //GET VIDEO
 app.post("/api/yt", async (req, res) => {
@@ -595,41 +655,33 @@ app.get("/api/courses", async (req, res) => {
 });
 
 //GET PROFILE DETAILS
+//updated backend to aslo add apikey to mongo db users schema
 app.post("/api/profile", async (req, res) => {
-  const { email, mName, password, uid } = req.body;
+  const { email, mName, password, uid, apiKey } = req.body;
   try {
-    if (password === "") {
-      await User.findOneAndUpdate(
-        { _id: uid },
-        { $set: { email: email, mName: mName } }
-      )
-        .then((result) => {
-          res.json({ success: true, message: "Profile Updated" });
-        })
-        .catch((error) => {
-          res
-            .status(500)
-            .json({ success: false, message: "Internal server error" });
-        });
-    } else {
-      await User.findOneAndUpdate(
-        { _id: uid },
-        { $set: { email: email, mName: mName, password: password } }
-      )
-        .then((result) => {
-          res.json({ success: true, message: "Profile Updated" });
-        })
-        .catch((error) => {
-          res
-            .status(500)
-            .json({ success: false, message: "Internal server error" });
-        });
+    const updateData = { email, mName };
+    if (password !== "") {
+      updateData.password = password;
     }
+    if (apiKey) {
+      updateData.apiKey = apiKey;
+    }
+    await User.findOneAndUpdate(
+      { _id: uid },
+      { $set: updateData }
+    )
+      .then((result) => {
+        res.json({ success: true, message: "Profile Updated" });
+      })
+      .catch((error) => {
+        console.error("Error updating profile:", error);
+        res.status(500).json({ success: false, message: "Internal server error" });
+      });
   } catch (error) {
+    console.error("Error in profile update:", error);
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 });
-
 //CHAT
 app.post("/api/chat", async (req, res) => {
   const receivedData = req.body;
