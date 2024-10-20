@@ -17,7 +17,9 @@ const {
 const { createApi } = require("unsplash-js");
 const showdown = require("showdown");
 const functions = require("firebase-functions");
+const connectDB = require("./config/db");
 // const axios = require('axios');
+connectDB();
 
 //INITIALIZE
 const app = express();
@@ -25,6 +27,7 @@ const allowedOrigins = [
   "http://localhost:5173",
   "https://ai-based-training-platfo-ca895.web.app",
   "https://ai-based-training-by-ariba-2d081.web.app",
+  "https://ai-skill-enhancement-and-job-readiness.cehpoint.co.in",
 ];
 
 const corsOptions = {
@@ -42,16 +45,6 @@ const corsOptions = {
 app.use(cors(corsOptions));
 const PORT = process.env.PORT;
 app.use(bodyParser.json());
-
-mongoose
-  .connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => {
-    console.log("Mongo Db Connected ");
-  })
-  .catch((err) => console.log(err));
 
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
@@ -73,6 +66,10 @@ const userSchema = new mongoose.Schema({
   email: { type: String, unique: true, required: true },
   mName: String,
   password: String,
+  role: {
+    type: String,
+    default: "admin",
+  },
   type: String,
   resetPasswordToken: { type: String, default: null },
   resetPasswordExpires: { type: Date, default: null },
@@ -195,6 +192,23 @@ app.post("/api/signin", async (req, res) => {
   }
 });
 
+app.post("/api/dashboard", async (req, res) => {
+  try {
+    // Fetch the admin from the database (for simplicity, we'll assume there's only one admin)
+    const admin = await User.findOne(req.body); // You can modify this to look up specific admins
+
+    // If no admin is found, return a 404 error
+    if (!admin) {
+      return res.status(404).json({ message: "Admin not found" });
+    }
+
+    // Send the admin data back to the frontend
+    res.json({ admin });
+  } catch (error) {
+    // Handle errors and send a 500 status
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+});
 //SEND MAIL
 app.post("/api/data", async (req, res) => {
   const receivedData = req.body;
@@ -469,6 +483,7 @@ app.post("/api/generate", async (req, res) => {
 app.post("/api/image", async (req, res) => {
   const receivedData = req.body;
   const promptString = receivedData.prompt;
+try{
   gis(promptString, logResults);
 
   function logResults(error, results) {
@@ -478,7 +493,10 @@ app.post("/api/image", async (req, res) => {
       res.status(200).json({ url: defaultImageUrl });
     } else {
       res.status(200).json({ url: results[0].url });
+
     }
+  } catch (e) {
+    console.log(e);
   }
 });
 
@@ -486,10 +504,10 @@ app.post("/api/image", async (req, res) => {
 //GET VIDEO
 app.post("/api/yt", async (req, res) => {
   try {
-    const receivedData = req.body;
-    const promptString = receivedData.prompt;
+    const { prompt } = req.body;
+
     const video = await youtubesearchapi.GetListByKeyword(
-      promptString,
+      prompt,
       [false],
       [1],
       [{ type: "video" }]
@@ -503,17 +521,29 @@ app.post("/api/yt", async (req, res) => {
 
 //GET TRANSCRIPT
 app.post("/api/transcript", async (req, res) => {
-  const receivedData = req.body;
-  const promptString = receivedData.prompt;
-  YoutubeTranscript.fetchTranscript(promptString)
-    .then((video) => {
-      res.status(200).json({ url: video });
-    })
-    .catch((error) => {
-      res
-        .status(500)
-        .json({ success: false, message: "Internal server error" });
-    });
+  try {
+    const { prompt } = req.body;
+
+    const transcript = await YoutubeTranscript.fetchTranscript(prompt);
+
+    // Check if transcript is empty
+    if (!transcript || transcript.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Transcript is disabled or not available for this video.",
+      });
+    }
+
+    res.status(200).json({ url: transcript });
+  } catch (error) {
+    if (error.message.includes("Transcript is disabled")) {
+      return res.status(403).json({
+        success: false,
+        message: "Transcript is disabled on this video.",
+      });
+    }
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
 });
 
 //STORE COURSE
@@ -714,8 +744,9 @@ app.post("/api/project-suggestions", async (req, res) => {
   }
 });
 
-const AppPort = process.env.PORT || 5000;
-app.listen(AppPort, () => {
-  console.log(`Server is running on port ${AppPort}`);
+const AppPort = 5000;
+app.listen(5000, () => {
+  console.log(`Server is running on port ${5000}`);
 });
+
 exports.api = functions.https.onRequest(app);
