@@ -68,17 +68,22 @@ const genAI = new GoogleGenerativeAI(process.env.API_KEY);
 const unsplash = createApi({ accessKey: process.env.UNSPLASH_ACCESS_KEY });
 
 //SCHEMA
-
 const userSchema = new mongoose.Schema({
   email: { type: String, unique: true, required: true },
   mName: String,
   password: String,
   type: String,
+  role: { type: String, default: 'nonadmin' },
   resetPasswordToken: { type: String, default: null },
   resetPasswordExpires: { type: Date, default: null },
 });
 
 const courseSchema = new mongoose.Schema({
+  content: { 
+    type: String, 
+    required: true,
+    maxlength: [16 * 1024 * 1024, 'Content exceeds maximum allowed length.'] // 16MB limit
+  },
   user: String,
   content: { type: String, required: true },
   type: String,
@@ -89,6 +94,16 @@ const courseSchema = new mongoose.Schema({
   completed: { type: Boolean, default: false },
 });
 
+// Define a Project schema
+const projectSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  userId: { type: String, required: true }, // To associate the project with a user
+  dateCreated: { type: Date, default: Date.now },
+});
+
+// Create a Project model
+const Project = mongoose.model("Project", projectSchema);
+
 //MODEL
 const User = mongoose.model("User", userSchema);
 const Course = mongoose.model("Course", courseSchema);
@@ -98,7 +113,142 @@ const Course = mongoose.model("Course", courseSchema);
 //SIGNUP
 
 app.use(cors(corsOptions));
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+// DASHBOARD DATA
+app.post("/api/dashboard", async (req, res) => {
+  try {
+    // Get total number of users
+    const userCount = await User.countDocuments();
+
+    // Get number of admin users
+    const adminCount = await User.countDocuments({ role: "admin" });
+
+    const freeCount = await User.countDocuments({ type: "free" });
+
+    const paidCount = await User.countDocuments({ type: "paid" });
+
+    // Get number of regular users (non-admin)
+    const regularUserCount = userCount - adminCount;
+
+    // Get total number of courses
+    const courseCount = await Course.countDocuments();
+
+    // Get number of video & text courses
+    const videoAndTextCourseCount = await Course.countDocuments({ type: "video & text course" });
+
+    // Get number of text & image courses
+    const textAndImageCourseCount = await Course.countDocuments({ type: "text & image course" });
+
+    // Get number of completed courses
+    const completedCourseCount = await Course.countDocuments({ completed: true });
+
+    // Prepare the response object
+    const dashboardData = {
+      users: userCount,
+      admins: adminCount,
+      frees: freeCount,
+      paids: paidCount,
+      regularUsers: regularUserCount,
+      courses: courseCount,
+      videoAndTextCourses: videoAndTextCourseCount,
+      textAndImageCourses: textAndImageCourseCount,
+      completedCourses: completedCourseCount
+    };
+
+    res.json(dashboardData);
+  } catch (error) {
+    console.error('Error fetching dashboard data:', error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
+// GET USERS
+app.get("/api/getusers", async (req, res) => {
+  try {
+    const users = await User.find({}, 'email mName type _id');
+    res.json(users);
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
+// GET COURSES
+app.get("/api/getcourses", async (req, res) => {
+  try {
+    const courses = await Course.find({}, 'user content type mainTopic photo date end completed');
+    res.json(courses);
+  } catch (error) {
+    console.error('Error fetching courses:', error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
+// GET ADMINS
+app.get("/api/getadmins", async (req, res) => {
+  try {
+    const admins = await User.find({ role: "admin" }, 'email mName');
+    const regularUsers = await User.find({ role: { $ne: "admin" } }, 'email mName');
+    res.json({ admins, regularUsers });
+  } catch (error) {
+    console.error('Error fetching admins:', error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
+// ADD ADMIN
+app.post("/api/addadmin", async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    if (user.role === "admin") {
+      return res.status(400).json({ success: false, message: "User is already an admin" });
+    }
+
+    user.role = "admin";
+    console.log("Saved admin")
+    await user.save();
+
+    res.json({ success: true, message: "User successfully made admin" });
+  } catch (error) {
+    console.error('Error adding admin:', error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
+// REMOVE ADMIN
+app.post("/api/removeadmin", async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    console.log(user.role)
+    if (user.role !== "admin") {
+      return res.status(400).json({ success: false, message: "User is not an admin" });
+    }
+
+    user.role = "nonadmin"; // Changed from "user" to "nonadmin"
+    console.log("Saved")
+    await user.save();
+
+    res.json({ success: true, message: "Admin status successfully removed" });
+  } catch (error) {
+    console.error('Error removing admin:', error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
 
 app.post("/api/signup", async (req, res) => {
   const { email, mName, password, type } = req.body;
@@ -409,17 +559,40 @@ app.post("/api/generate", async (req, res) => {
 
 //GET IMAGE
 app.post("/api/image", async (req, res) => {
-  const receivedData = req.body;
-  const promptString = receivedData.prompt;
-  gis(promptString, logResults);
-  function logResults(error, results) {
-    if (error) {
-      //ERROR
-    } else {
-      res.status(200).json({ url: results[0].url });
+  try {
+    const receivedData = req.body;
+    
+    // Check if prompt is provided
+    if (!receivedData || !receivedData.prompt) {
+      return res.status(400).json({ error: "Prompt is required" });
     }
+    
+    const promptString = receivedData.prompt;
+
+    // Call the GIS function
+    gis(promptString, (error, results) => {
+      if (error) {
+        // Return a 500 error if there's an issue with the GIS API
+        console.error("Error fetching image:", error);
+        return res.status(500).json({ error: "Failed to generate image" });
+      }
+      
+      if (!results || results.length === 0) {
+        // Handle case where no results are found
+        return res.status(404).json({ error: "No images found for the given prompt" });
+      }
+
+      // Return the first result's URL
+      res.status(200).json({ url: results[0].url });
+    });
+    
+  } catch (err) {
+    // Catch any unexpected errors
+    console.error("Unexpected error:", err);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
+
 
 //GET VIDEO
 app.post("/api/yt", async (req, res) => {
@@ -481,20 +654,39 @@ app.post("/api/course", async (req, res) => {
 
 //UPDATE COURSE
 app.post("/api/update", async (req, res) => {
-  const { content, courseId } = req.body;
+  const { content, courseId, chunkIndex, totalChunks } = req.body;
+  
   try {
-    await Course.findOneAndUpdate({ _id: courseId }, [
-      { $set: { content: content } },
-    ])
-      .then((result) => {
-        res.json({ success: true, message: "Course updated successfully" });
-      })
-      .catch((error) => {
-        res
-          .status(500)
-          .json({ success: false, message: "Internal server error" });
-      });
+    if (chunkIndex === 0) {
+      // Initialize or reset the content for this course
+      await Course.findOneAndUpdate(
+        { _id: courseId },
+        { $set: { content: "" } }
+      );
+    }
+
+    // Append the new chunk to the existing content
+    await Course.findOneAndUpdate(
+      { _id: courseId },
+      { $set: { [`content.${chunkIndex}`]: content } }
+    );
+
+    if (chunkIndex === totalChunks - 1) {
+      // All chunks received, combine them
+      const course = await Course.findById(courseId);
+      const fullContent = course.content.join('');
+      
+      await Course.findOneAndUpdate(
+        { _id: courseId },
+        { $set: { content: fullContent } }
+      );
+
+      res.json({ success: true, message: "Course updated successfully" });
+    } else {
+      res.json({ success: true, message: "Chunk received successfully" });
+    }
   } catch (error) {
+    console.error("Error updating course:", error);
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 });
@@ -657,6 +849,22 @@ app.post("/api/project-suggestions", async (req, res) => {
   } catch (error) {
     console.error("Error generating project suggestions:", error);
     res.status(500).send("Error generating project suggestions");
+  }
+});
+
+// Endpoint to save a project
+app.post("/api/projectSaved", async (req, res) => {
+  const { projectTitle, userId } = req.body;
+
+  try {
+    // Create a new project instance
+    const newProject = new Project({ title: projectTitle, userId });
+    await newProject.save(); // Save the project to the database
+
+    res.status(201).json({ message: "Project saved successfully!" });
+  } catch (error) {
+    console.error("Error saving project:", error);
+    res.status(500).json({ message: "Error saving project" });
   }
 });
 
