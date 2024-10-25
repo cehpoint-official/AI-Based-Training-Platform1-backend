@@ -97,7 +97,10 @@ const courseSchema = new mongoose.Schema({
 // Define a Project schema
 const projectSchema = new mongoose.Schema({
   title: { type: String, required: true },
-  userId: { type: String, required: true }, // To associate the project with a user
+  userId: { type: String, required: true }, 
+  email: { type: String, required: true }, 
+  completed: { type: Boolean, default: false, required: true },
+  github_url: { type: String },
   dateCreated: { type: Date, default: Date.now },
 });
 
@@ -854,12 +857,20 @@ app.post("/api/project-suggestions", async (req, res) => {
 
 // Endpoint to save a project
 app.post("/api/projectSaved", async (req, res) => {
-  const { projectTitle, userId } = req.body;
+  const { projectTitle, userId, email, completed = false, github_url } = req.body; // Destructure new fields
 
   try {
-    // Create a new project instance
-    const newProject = new Project({ title: projectTitle, userId });
-    await newProject.save(); // Save the project to the database
+    // Create a new project instance with the updated fields
+    const newProject = new Project({
+      title: projectTitle,
+      userId,
+      email,
+      completed, // Default to false if not provided
+      github_url // Optional field
+    });
+
+    // Save the project to the database
+    await newProject.save(); 
 
     res.status(201).json({ message: "Project saved successfully!" });
   } catch (error) {
@@ -867,6 +878,23 @@ app.post("/api/projectSaved", async (req, res) => {
     res.status(500).json({ message: "Error saving project" });
   }
 });
+
+app.get("/api/getprojects", async (req, res) => {
+  try {
+    // Fetch all projects from the database
+    const projects = await Project.find(); 
+
+    if (!projects) {
+      return res.status(404).json({ success: false, message: "No projects found" });
+    }
+
+    res.json({ success: true, data: projects, message: "Projects fetched successfully" });
+  } catch (error) {
+    console.error("Error fetching projects:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
 
 const AppPort = process.env.PORT || 5000;
 app.listen(AppPort, () => {
