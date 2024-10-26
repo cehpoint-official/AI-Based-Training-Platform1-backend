@@ -371,7 +371,6 @@ app.post("/api/prompt", async (req, res) => {
 
     try {
       const result = await model.generateContent(prompt);
-      console.log("response using user api key");
       const generatedText = result.response.text();
       res.status(200).json({ generatedText });
     } catch (error) {
@@ -387,7 +386,6 @@ app.post("/api/prompt", async (req, res) => {
     const prompt = promptString;
     try {
       const result = await model.generateContent(prompt);
-      console.log("response using default api key");
       const generatedText = result.response.text();
       res.status(200).json({ generatedText });
     } catch (error) {
@@ -423,11 +421,6 @@ app.post("/api/generate", async (req, res) => {
       threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
     },
   ];
-
-  // const model = genAI.getGenerativeModel({
-  //   model: "gemini-pro",
-  //   safetySettings,
-  // });
   let genAIuser;
   if(useUserApiKey && userApiKey!==null){
     genAIuser=new GoogleGenerativeAI(userApiKey);
@@ -446,7 +439,6 @@ app.post("/api/generate", async (req, res) => {
           const converter = new showdown.Converter();
           const markdownText = txt;
           const text = converter.makeHtml(markdownText);
-          // console.log("response from user apikey"); for testing only
           res.status(200).json({ text });
         })
     } catch (error) {
@@ -469,7 +461,6 @@ app.post("/api/generate", async (req, res) => {
           const converter = new showdown.Converter();
           const markdownText = txt;
           const text = converter.makeHtml(markdownText);
-          // console.log("response from default apikey"); for testing only
           res.status(200).json({ text });
         })
     } catch (error) {
@@ -483,22 +474,22 @@ app.post("/api/generate", async (req, res) => {
 app.post("/api/image", async (req, res) => {
   const receivedData = req.body;
   const promptString = receivedData.prompt;
-try{
-  gis(promptString, logResults);
+  try{
+    gis(promptString, logResults);
 
-  function logResults(error, results) {
-    if (error || !results || results.length === 0) {
-      // If there's an error or no results, set a random image URL
-      const defaultImageUrl = "https://via.placeholder.com/150";
-      res.status(200).json({ url: defaultImageUrl });
-    } else {
-      res.status(200).json({ url: results[0].url });
+    function logResults(error, results) {
+      if (error || !results || results.length === 0) {
+        // If there's an error or no results, set a random image URL
+        const defaultImageUrl = "https://via.placeholder.com/150";
+        res.status(200).json({ url: defaultImageUrl });
+      } else {
+        res.status(200).json({ url: results[0].url });
 
+      }
     }
   } catch (e) {
     console.log(e);
-  }
-});
+  }});
 
 
 //GET VIDEO
