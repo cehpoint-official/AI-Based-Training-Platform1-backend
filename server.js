@@ -695,19 +695,7 @@ app.get('/api-keys', async (req, res) => {
   }
 });
 
-app.post('/api-keys', async (req, res) => {
-  const { geminiKey, unsplashKey } = req.body;
 
-  try {
-    const user = await User.findById(req.user.email);
-    user.geminiKey = geminiKey;
-    user.unsplashKey = unsplashKey;
-    await user.save();
-    res.json({ message: 'API keys updated successfully' });
-  } catch (err) {
-    res.status(500).send('Server Error');
-  }
-});
 
 
 const AppPort = process.env.PORT || 5000;
