@@ -102,10 +102,21 @@ const projectSchema = new mongoose.Schema({
   completed: { type: Boolean, default: false, required: true },
   github_url: { type: String },
   dateCreated: { type: Date, default: Date.now },
-});
+}, { collection: 'project-users' });
+
+const ProjectTemplateSchema = new mongoose.Schema({
+      category: { type: String, required: true },  // Category like 'web', 'android', 'ML', etc.
+      title: { type: String, required: true },     // Title of the project
+      description: { type: String, required: true }, // Description of the project
+      difficulty: { type: String, required: true },  // e.g., 'Beginner', 'Intermediate', 'Advanced'
+      time: { type: String, required: true },         // e.g., '1 week', '2 weeks'
+      date: { type: Date, default: Date.now },      // Date when the project was added
+      assignedTo: { type: [String], default: [] },   // Array to store user IDs who have saved the project
+}, { collection: 'main_projects' });
 
 // Create a Project model
 const Project = mongoose.model("Project", projectSchema);
+const ProjectTemplate = mongoose.model("ProjectTemplate", ProjectTemplateSchema);
 
 //MODEL
 const User = mongoose.model("User", userSchema);
@@ -894,6 +905,75 @@ app.get("/api/getprojects", async (req, res) => {
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 });
+
+app.get("/api/getmainprojects", async (req, res) => {
+  try {
+    // Fetch all projects from the database
+    const projects = await ProjectTemplate.find(); // Use ProjectTemplate instead of ProjectTemplateSchema
+
+    if (!projects || projects.length === 0) {
+      return res.status(404).json({ success: false, message: "No projects found" });
+    }
+
+    res.json({ success: true, data: projects, message: "Main projects fetched successfully" });
+  } catch (error) {
+    console.error("Error fetching main projects:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
+
+app.post("/api/saveProject", async (req, res) => {
+  try {
+    const { title, category, description, difficulty, time } = req.body;
+
+    // Validate the request body
+    if (!title || !category || !description || !difficulty || !time) {
+      return res.status(400).json({ success: false, message: "All fields are required" });
+    }
+
+    // Create a new project (remove 'projectSection')
+    const newProject = new ProjectTemplate({
+      title,
+      category,
+      description,
+      difficulty,
+      time
+    });
+
+    // Save the project to the database
+    await newProject.save();
+
+    res.status(201).json({ success: true, message: "Project saved successfully" });
+  } catch (error) {
+    console.error("Error saving project:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
+app.put("/api/updateproject", async (req, res) => {
+  const { projectTitle, userId } = req.body;
+  try {
+    console.log("Received data:", req.body); // Log the received data for debugging
+
+    const updatedProject = await ProjectTemplate.findOneAndUpdate(
+      { title: projectTitle },
+      { $addToSet: { assignedTo: userId } },
+      { new: true }
+    );
+
+    if (!updatedProject) {
+      return res.status(404).json({ success: false, message: "Project not found" });
+    }
+
+    res.json({ success: true, message: "Project updated successfully", data: updatedProject });
+  } catch (error) {
+    console.error("Error updating project:", error); // Log the error for debugging
+    res.status(500).json({ success: false, message: "Internal server error", error: error.message });
+  }
+});
+
+
 
 
 const AppPort = process.env.PORT || 5000;
