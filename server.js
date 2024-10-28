@@ -68,7 +68,7 @@ const userSchema = new mongoose.Schema({
   password: String,
   role: {
     type: String,
-    default: "admin",
+    default: "nonadmin",
   },
   type: String,
   resetPasswordToken: { type: String, default: null },
@@ -86,6 +86,29 @@ const courseSchema = new mongoose.Schema({
   end: { type: Date, default: Date.now },
   completed: { type: Boolean, default: false },
 });
+
+const projectSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  userId: { type: String, required: true }, 
+  email: { type: String, required: true }, 
+  completed: { type: Boolean, default: false, required: true },
+  github_url: { type: String },
+  dateCreated: { type: Date, default: Date.now },
+}, { collection: 'project-users' });
+
+const ProjectTemplateSchema = new mongoose.Schema({
+      category: { type: String, required: true },  // Category like 'web', 'android', 'ML', etc.
+      title: { type: String, required: true },     // Title of the project
+      description: { type: String, required: true }, // Description of the project
+      difficulty: { type: String, required: true },  // e.g., 'Beginner', 'Intermediate', 'Advanced'
+      time: { type: String, required: true },         // e.g., '1 week', '2 weeks'
+      date: { type: Date, default: Date.now },      // Date when the project was added
+      assignedTo: { type: [String], default: [] },   // Array to store user IDs who have saved the project
+}, { collection: 'main_projects' });
+
+// Create a Project model
+const Project = mongoose.model("Project", projectSchema);
+const ProjectTemplate = mongoose.model("ProjectTemplate", ProjectTemplateSchema);
 
 //MODEL
 const User = mongoose.model("User", userSchema);
@@ -194,21 +217,136 @@ app.post("/api/signin", async (req, res) => {
 
 app.post("/api/dashboard", async (req, res) => {
   try {
-    // Fetch the admin from the database (for simplicity, we'll assume there's only one admin)
-    const admin = await User.findOne(req.body); // You can modify this to look up specific admins
+    // Get total number of users
+    const userCount = await User.countDocuments();
 
-    // If no admin is found, return a 404 error
-    if (!admin) {
-      return res.status(404).json({ message: "Admin not found" });
-    }
+    // Get number of admin users
+    const adminCount = await User.countDocuments({ role: "admin" });
 
-    // Send the admin data back to the frontend
-    res.json({ admin });
+    const freeCount = await User.countDocuments({ type: "free" });
+
+    const paidCount = await User.countDocuments({ type: "paid" });
+
+    // Get number of regular users (non-admin)
+    const regularUserCount = userCount - adminCount;
+
+    // Get total number of courses
+    const courseCount = await Course.countDocuments();
+
+    // Get number of video & text courses
+    const videoAndTextCourseCount = await Course.countDocuments({ type: "video & text course" });
+
+    // Get number of text & image courses
+    const textAndImageCourseCount = await Course.countDocuments({ type: "text & image course" });
+
+    // Get number of completed courses
+    const completedCourseCount = await Course.countDocuments({ completed: true });
+
+    // Prepare the response object
+    const dashboardData = {
+      users: userCount,
+      admins: adminCount,
+      frees: freeCount,
+      paids: paidCount,
+      regularUsers: regularUserCount,
+      courses: courseCount,
+      videoAndTextCourses: videoAndTextCourseCount,
+      textAndImageCourses: textAndImageCourseCount,
+      completedCourses: completedCourseCount
+    };
+
+    res.json(dashboardData);
   } catch (error) {
-    // Handle errors and send a 500 status
-    res.status(500).json({ message: "Server error", error: error.message });
+    console.error('Error fetching dashboard data:', error);
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 });
+
+// GET USERS
+app.get("/api/getusers", async (req, res) => {
+  try {
+    const users = await User.find({}, 'email mName type _id');
+    res.json(users);
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
+// GET COURSES
+app.get("/api/getcourses", async (req, res) => {
+  try {
+    const courses = await Course.find({}, 'user content type mainTopic photo date end completed');
+    res.json(courses);
+  } catch (error) {
+    console.error('Error fetching courses:', error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
+// GET ADMINS
+app.get("/api/getadmins", async (req, res) => {
+  try {
+    const admins = await User.find({ role: "admin" }, 'email mName');
+    const regularUsers = await User.find({ role: { $ne: "admin" } }, 'email mName');
+    res.json({ admins, regularUsers });
+  } catch (error) {
+    console.error('Error fetching admins:', error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
+// ADD ADMIN
+app.post("/api/addadmin", async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    if (user.role === "admin") {
+      return res.status(400).json({ success: false, message: "User is already an admin" });
+    }
+
+    user.role = "admin";
+    console.log("Saved admin")
+    await user.save();
+
+    res.json({ success: true, message: "User successfully made admin" });
+  } catch (error) {
+    console.error('Error adding admin:', error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
+// REMOVE ADMIN
+app.post("/api/removeadmin", async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    console.log(user.role)
+    if (user.role !== "admin") {
+      return res.status(400).json({ success: false, message: "User is not an admin" });
+    }
+
+    user.role = "nonadmin"; // Changed from "user" to "nonadmin"
+    console.log("Saved")
+    await user.save();
+
+    res.json({ success: true, message: "Admin status successfully removed" });
+  } catch (error) {
+    console.error('Error removing admin:', error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
 //SEND MAIL
 app.post("/api/data", async (req, res) => {
   const receivedData = req.body;
@@ -732,6 +870,114 @@ app.post("/api/project-suggestions", async (req, res) => {
   } catch (error) {
     console.error("Error generating project suggestions:", error);
     res.status(500).send("Error generating project suggestions");
+  }
+});
+
+
+// Endpoint to save a project
+app.post("/api/projectSaved", async (req, res) => {
+  const { projectTitle, userId, email, completed = false, github_url } = req.body; // Destructure new fields
+
+  try {
+    // Create a new project instance with the updated fields
+    const newProject = new Project({
+      title: projectTitle,
+      userId,
+      email,
+      completed, // Default to false if not provided
+      github_url // Optional field
+    });
+
+    // Save the project to the database
+    await newProject.save(); 
+
+    res.status(201).json({ message: "Project saved successfully!" });
+  } catch (error) {
+    console.error("Error saving project:", error);
+    res.status(500).json({ message: "Error saving project" });
+  }
+});
+
+app.get("/api/getprojects", async (req, res) => {
+  try {
+    // Fetch all projects from the database
+    const projects = await Project.find(); 
+
+    if (!projects) {
+      return res.status(404).json({ success: false, message: "No projects found" });
+    }
+
+    res.json({ success: true, data: projects, message: "Projects fetched successfully" });
+  } catch (error) {
+    console.error("Error fetching projects:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
+app.get("/api/getmainprojects", async (req, res) => {
+  try {
+    // Fetch all projects from the database
+    const projects = await ProjectTemplate.find(); // Use ProjectTemplate instead of ProjectTemplateSchema
+
+    if (!projects || projects.length === 0) {
+      return res.status(404).json({ success: false, message: "No projects found" });
+    }
+
+    res.json({ success: true, data: projects, message: "Main projects fetched successfully" });
+  } catch (error) {
+    console.error("Error fetching main projects:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
+
+app.post("/api/saveProject", async (req, res) => {
+  try {
+    const { title, category, description, difficulty, time } = req.body;
+
+    // Validate the request body
+    if (!title || !category || !description || !difficulty || !time) {
+      return res.status(400).json({ success: false, message: "All fields are required" });
+    }
+
+    // Create a new project (remove 'projectSection')
+    const newProject = new ProjectTemplate({
+      title,
+      category,
+      description,
+      difficulty,
+      time
+    });
+
+    // Save the project to the database
+    await newProject.save();
+
+    res.status(201).json({ success: true, message: "Project saved successfully" });
+  } catch (error) {
+    console.error("Error saving project:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
+app.put("/api/updateproject", async (req, res) => {
+  const { projectTitle, userId } = req.body;
+  try {
+    console.log("Received data:", req.body); // Log the received data for debugging
+
+    const updatedProject = await ProjectTemplate.findOneAndUpdate(
+      { title: projectTitle },
+      { $addToSet: { assignedTo: userId } },
+      { new: true }
+    );
+
+    if (!updatedProject) {
+      return res.status(404).json({ success: false, message: "Project not found" });
+    }
+
+    res.json({ success: true, message: "Project updated successfully", data: updatedProject });
+  } catch (error) {
+    console.error("Error updating project:", error); // Log the error for debugging
+    res.status(500).json({ success: false, message: "Internal server error", error: error.message });
   }
 });
 
