@@ -51,6 +51,6 @@ app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
 
-const ariba_api = functions.https.onRequest(app);
+const cehpoint_api = functions.https.onRequest(app);
 
-export { ariba_api };
+export { cehpoint_api };
