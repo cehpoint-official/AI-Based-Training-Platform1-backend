@@ -17,7 +17,9 @@ const {
 const { createApi } = require("unsplash-js");
 const showdown = require("showdown");
 const functions = require("firebase-functions");
+const connectDB = require("./config/db");
 // const axios = require('axios');
+connectDB();
 
 //INITIALIZE
 const app = express();
@@ -25,6 +27,7 @@ const allowedOrigins = [
   "http://localhost:5173",
   "https://ai-based-training-platfo-ca895.web.app",
   "https://ai-based-training-by-ariba-2d081.web.app",
+  "https://ai-skill-enhancement-and-job-readiness.cehpoint.co.in",
 ];
 
 const corsOptions = {
@@ -43,16 +46,6 @@ app.use(cors(corsOptions));
 const PORT = process.env.PORT;
 app.use(bodyParser.json());
 
-mongoose
-  .connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => {
-    console.log("Mongo Db Connected ");
-  })
-  .catch((err) => console.log(err));
-
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 465,
@@ -68,22 +61,22 @@ const genAI = new GoogleGenerativeAI(process.env.API_KEY);
 const unsplash = createApi({ accessKey: process.env.UNSPLASH_ACCESS_KEY });
 
 //SCHEMA
+
 const userSchema = new mongoose.Schema({
   email: { type: String, unique: true, required: true },
   mName: String,
   password: String,
+  role: {
+    type: String,
+    default: "nonadmin",
+  },
   type: String,
-  role: { type: String, default: 'nonadmin' },
   resetPasswordToken: { type: String, default: null },
   resetPasswordExpires: { type: Date, default: null },
+  apiKey: { type: String, default: null }
 });
 
 const courseSchema = new mongoose.Schema({
-  content: { 
-    type: String, 
-    required: true,
-    maxlength: [16 * 1024 * 1024, 'Content exceeds maximum allowed length.'] // 16MB limit
-  },
   user: String,
   content: { type: String, required: true },
   type: String,
@@ -94,7 +87,6 @@ const courseSchema = new mongoose.Schema({
   completed: { type: Boolean, default: false },
 });
 
-// Define a Project schema
 const projectSchema = new mongoose.Schema({
   title: { type: String, required: true },
   userId: { type: String, required: true }, 
@@ -127,10 +119,102 @@ const Course = mongoose.model("Course", courseSchema);
 //SIGNUP
 
 app.use(cors(corsOptions));
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
+app.use(express.json());
 
-// DASHBOARD DATA
+app.post("/api/signup", async (req, res) => {
+  const { email, mName, password, type } = req.body;
+
+  try {
+    const estimate = await User.estimatedDocumentCount();
+    if (estimate > 0) {
+      const existingUser = await User.findOne({ email });
+      if (existingUser) {
+        return res.json({
+          success: false,
+          message: "User with this email already exists",
+        });
+      }
+      const newUser = new User({ email, mName, password, type });
+      await newUser.save();
+      res.json({
+        success: true,
+        message: "Account created successfully",
+        userId: newUser._id,
+      });
+    } else {
+      const newUser = new User({ email, mName, password, type });
+      await newUser.save();
+      // const newAdmin = new Admin({ email, mName, type: 'main' });
+      // await newAdmin.save();
+      res.json({
+        success: true,
+        message: "Account created successfully",
+        userId: newUser._id,
+      });
+    }
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
+app.post("/api/google/auth", async (req, res) => {
+  const { name, email, token } = req.body;
+  try {
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      if (!existingUser.password) {
+        return res.json({
+          success: true,
+          message: "Google authentication successful",
+          userData: existingUser,
+          passwordSetRequired: true,
+        });
+      }
+      return res.json({
+        success: true,
+        message: "SignIn successful",
+        userData: existingUser,
+      });
+    }
+    const newUser = new User({ email, mName: name, resetPasswordToken: token });
+    await newUser.save();
+    res.json({
+      success: true,
+      message: "Account created successfully Please set Password",
+      userData: newUser,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
+//SIGNIN
+app.post("/api/signin", async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.json({ success: false, message: "Invalid email or password" });
+    }
+
+    if (password === user.password) {
+      return res.json({
+        success: true,
+        message: "SignIn successful",
+        userData: user,
+      });
+    }
+
+    res.json({ success: false, message: "Invalid email or password" });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ success: false, message: "Invalid email or password" });
+  }
+});
+
 app.post("/api/dashboard", async (req, res) => {
   try {
     // Get total number of users
@@ -263,101 +347,6 @@ app.post("/api/removeadmin", async (req, res) => {
   }
 });
 
-
-app.post("/api/signup", async (req, res) => {
-  const { email, mName, password, type } = req.body;
-
-  try {
-    const estimate = await User.estimatedDocumentCount();
-    if (estimate > 0) {
-      const existingUser = await User.findOne({ email });
-      if (existingUser) {
-        return res.json({
-          success: false,
-          message: "User with this email already exists",
-        });
-      }
-      const newUser = new User({ email, mName, password, type });
-      await newUser.save();
-      res.json({
-        success: true,
-        message: "Account created successfully",
-        userId: newUser._id,
-      });
-    } else {
-      const newUser = new User({ email, mName, password, type });
-      await newUser.save();
-      // const newAdmin = new Admin({ email, mName, type: 'main' });
-      // await newAdmin.save();
-      res.json({
-        success: true,
-        message: "Account created successfully",
-        userId: newUser._id,
-      });
-    }
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Internal server error" });
-  }
-});
-
-app.post("/api/google/auth", async (req, res) => {
-  const { name, email, token } = req.body;
-  try {
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      if (!existingUser.password) {
-        return res.json({
-          success: true,
-          message: "Google authentication successful",
-          userData: existingUser,
-          passwordSetRequired: true,
-        });
-      }
-      return res.json({
-        success: true,
-        message: "SignIn successful",
-        userData: existingUser,
-      });
-    }
-    const newUser = new User({ email, mName: name, resetPasswordToken: token });
-    await newUser.save();
-    res.json({
-      success: true,
-      message: "Account created successfully Please set Password",
-      userData: newUser,
-    });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Internal server error" });
-  }
-});
-
-//SIGNIN
-app.post("/api/signin", async (req, res) => {
-  const { email, password } = req.body;
-
-  try {
-    const user = await User.findOne({ email });
-
-    if (!user) {
-      return res.json({ success: false, message: "Invalid email or password" });
-    }
-
-    if (password === user.password) {
-      return res.json({
-        success: true,
-        message: "SignIn successful",
-        userData: user,
-      });
-    }
-
-    res.json({ success: false, message: "Invalid email or password" });
-  } catch (error) {
-    res
-      .status(500)
-      .json({ success: false, message: "Invalid email or password" });
-  }
-});
-
 //SEND MAIL
 app.post("/api/data", async (req, res) => {
   const receivedData = req.body;
@@ -484,6 +473,8 @@ app.post("/api/prompt", async (req, res) => {
   const receivedData = req.body;
 
   const promptString = receivedData.prompt;
+  const useUserApiKey = receivedData.useUserApiKey || false;
+  const userApiKey = receivedData.userApiKey || null;
 
   const safetySettings = [
     {
@@ -503,22 +494,42 @@ app.post("/api/prompt", async (req, res) => {
       threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
     },
   ];
+    // const model = genAI.getGenerativeModel({
+  //   model: "gemini-pro",
+  //   safetySettings,
+  // });
+  let genAIuser;
+  if(useUserApiKey && userApiKey!==null){
+    genAIuser=new GoogleGenerativeAI(userApiKey);
+    const model=genAIuser.getGenerativeModel({
+      model:"gemini-pro",
+      safetySettings
+    })
+    const prompt = promptString;
 
-  const model = genAI.getGenerativeModel({
-    model: "gemini-pro",
-    safetySettings,
-  });
-
-  const prompt = promptString;
-
-  try {
-    const result = await model.generateContent(prompt);
-
-    const generatedText = result.response.text();
-    res.status(200).json({ generatedText });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    try {
+      const result = await model.generateContent(prompt);
+      const generatedText = result.response.text();
+      res.status(200).json({ generatedText });
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ success: false, message: "Internal server error" });
+    }
+  }
+  else{
+    const model = genAI.getGenerativeModel({
+      model: "gemini-pro",
+      safetySettings,
+    });
+    const prompt = promptString;
+    try {
+      const result = await model.generateContent(prompt);
+      const generatedText = result.response.text();
+      res.status(200).json({ generatedText });
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ success: false, message: "Internal server error" });
+    }
   }
 });
 
@@ -527,6 +538,8 @@ app.post("/api/generate", async (req, res) => {
   const receivedData = req.body;
 
   const promptString = receivedData.prompt;
+  const useUserApiKey = receivedData.useUserApiKey || false;
+  const userApiKey = receivedData.userApiKey || null;
 
   const safetySettings = [
     {
@@ -546,75 +559,84 @@ app.post("/api/generate", async (req, res) => {
       threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
     },
   ];
-
-  const model = genAI.getGenerativeModel({
-    model: "gemini-pro",
-    safetySettings,
-  });
-
-  const prompt = promptString;
-
-  await model
-    .generateContent(prompt)
-    .then((result) => {
-      const response = result.response;
-      const txt = response.text();
-      const converter = new showdown.Converter();
-      const markdownText = txt;
-      const text = converter.makeHtml(markdownText);
-      res.status(200).json({ text });
+  let genAIuser;
+  if(useUserApiKey && userApiKey!==null){
+    genAIuser=new GoogleGenerativeAI(userApiKey);
+    const model=genAIuser.getGenerativeModel({
+      model:"gemini-pro",
+      safetySettings
     })
-    .catch((error) => {
-      res
-        .status(500)
-        .json({ success: false, message: "Internal server error" });
+    const prompt = promptString;
+
+    try {
+      await model
+        .generateContent(prompt)
+        .then((result) => {
+          const response = result.response;
+          const txt = response.text();
+          const converter = new showdown.Converter();
+          const markdownText = txt;
+          const text = converter.makeHtml(markdownText);
+          res.status(200).json({ text });
+        })
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ success: false, message: "Internal server error" });
+    }
+  }
+  else{
+    const model = genAI.getGenerativeModel({
+      model: "gemini-pro",
+      safetySettings,
     });
+    try {
+      const prompt = promptString;
+      await model
+        .generateContent(prompt)
+        .then((result) => {
+          const response = result.response;
+          const txt = response.text();
+          const converter = new showdown.Converter();
+          const markdownText = txt;
+          const text = converter.makeHtml(markdownText);
+          res.status(200).json({ text });
+        })
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ success: false, message: "Internal server error" });
+    }
+  }
 });
 
 //GET IMAGE
 app.post("/api/image", async (req, res) => {
-  try {
-    const receivedData = req.body;
-    
-    // Check if prompt is provided
-    if (!receivedData || !receivedData.prompt) {
-      return res.status(400).json({ error: "Prompt is required" });
+  const receivedData = req.body;
+  const promptString = receivedData.prompt;
+  try{
+    gis(promptString, logResults);
+
+    function logResults(error, results) {
+      if (error || !results || results.length === 0) {
+        // If there's an error or no results, set a random image URL
+        const defaultImageUrl = "https://via.placeholder.com/150";
+        res.status(200).json({ url: defaultImageUrl });
+      } else {
+        res.status(200).json({ url: results[0].url });
+
+      }
     }
-    
-    const promptString = receivedData.prompt;
-
-    // Call the GIS function
-    gis(promptString, (error, results) => {
-      if (error) {
-        // Return a 500 error if there's an issue with the GIS API
-        console.error("Error fetching image:", error);
-        return res.status(500).json({ error: "Failed to generate image" });
-      }
-      
-      if (!results || results.length === 0) {
-        // Handle case where no results are found
-        return res.status(404).json({ error: "No images found for the given prompt" });
-      }
-
-      // Return the first result's URL
-      res.status(200).json({ url: results[0].url });
-    });
-    
-  } catch (err) {
-    // Catch any unexpected errors
-    console.error("Unexpected error:", err);
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
+  } catch (e) {
+    console.log(e);
+  }});
 
 
 //GET VIDEO
 app.post("/api/yt", async (req, res) => {
   try {
-    const receivedData = req.body;
-    const promptString = receivedData.prompt;
+    const { prompt } = req.body;
+
     const video = await youtubesearchapi.GetListByKeyword(
-      promptString,
+      prompt,
       [false],
       [1],
       [{ type: "video" }]
@@ -628,17 +650,29 @@ app.post("/api/yt", async (req, res) => {
 
 //GET TRANSCRIPT
 app.post("/api/transcript", async (req, res) => {
-  const receivedData = req.body;
-  const promptString = receivedData.prompt;
-  YoutubeTranscript.fetchTranscript(promptString)
-    .then((video) => {
-      res.status(200).json({ url: video });
-    })
-    .catch((error) => {
-      res
-        .status(500)
-        .json({ success: false, message: "Internal server error" });
-    });
+  try {
+    const { prompt } = req.body;
+
+    const transcript = await YoutubeTranscript.fetchTranscript(prompt);
+
+    // Check if transcript is empty
+    if (!transcript || transcript.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Transcript is disabled or not available for this video.",
+      });
+    }
+
+    res.status(200).json({ url: transcript });
+  } catch (error) {
+    if (error.message.includes("Transcript is disabled")) {
+      return res.status(403).json({
+        success: false,
+        message: "Transcript is disabled on this video.",
+      });
+    }
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
 });
 
 //STORE COURSE
@@ -668,39 +702,20 @@ app.post("/api/course", async (req, res) => {
 
 //UPDATE COURSE
 app.post("/api/update", async (req, res) => {
-  const { content, courseId, chunkIndex, totalChunks } = req.body;
-  
+  const { content, courseId } = req.body;
   try {
-    if (chunkIndex === 0) {
-      // Initialize or reset the content for this course
-      await Course.findOneAndUpdate(
-        { _id: courseId },
-        { $set: { content: "" } }
-      );
-    }
-
-    // Append the new chunk to the existing content
-    await Course.findOneAndUpdate(
-      { _id: courseId },
-      { $set: { [`content.${chunkIndex}`]: content } }
-    );
-
-    if (chunkIndex === totalChunks - 1) {
-      // All chunks received, combine them
-      const course = await Course.findById(courseId);
-      const fullContent = course.content.join('');
-      
-      await Course.findOneAndUpdate(
-        { _id: courseId },
-        { $set: { content: fullContent } }
-      );
-
-      res.json({ success: true, message: "Course updated successfully" });
-    } else {
-      res.json({ success: true, message: "Chunk received successfully" });
-    }
+    await Course.findOneAndUpdate({ _id: courseId }, [
+      { $set: { content: content } },
+    ])
+      .then((result) => {
+        res.json({ success: true, message: "Course updated successfully" });
+      })
+      .catch((error) => {
+        res
+          .status(500)
+          .json({ success: false, message: "Internal server error" });
+      });
   } catch (error) {
-    console.error("Error updating course:", error);
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 });
@@ -769,41 +784,33 @@ app.get("/api/courses", async (req, res) => {
 });
 
 //GET PROFILE DETAILS
+//updated backend to aslo add apikey to mongo db users schema
 app.post("/api/profile", async (req, res) => {
-  const { email, mName, password, uid } = req.body;
+  const { email, mName, password, uid, apiKey } = req.body;
   try {
-    if (password === "") {
-      await User.findOneAndUpdate(
-        { _id: uid },
-        { $set: { email: email, mName: mName } }
-      )
-        .then((result) => {
-          res.json({ success: true, message: "Profile Updated" });
-        })
-        .catch((error) => {
-          res
-            .status(500)
-            .json({ success: false, message: "Internal server error" });
-        });
-    } else {
-      await User.findOneAndUpdate(
-        { _id: uid },
-        { $set: { email: email, mName: mName, password: password } }
-      )
-        .then((result) => {
-          res.json({ success: true, message: "Profile Updated" });
-        })
-        .catch((error) => {
-          res
-            .status(500)
-            .json({ success: false, message: "Internal server error" });
-        });
+    const updateData = { email, mName };
+    if (password !== "") {
+      updateData.password = password;
     }
+    if (apiKey) {
+      updateData.apiKey = apiKey;
+    }
+    await User.findOneAndUpdate(
+      { _id: uid },
+      { $set: updateData }
+    )
+      .then((result) => {
+        res.json({ success: true, message: "Profile Updated" });
+      })
+      .catch((error) => {
+        console.error("Error updating profile:", error);
+        res.status(500).json({ success: false, message: "Internal server error" });
+      });
   } catch (error) {
+    console.error("Error in profile update:", error);
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 });
-
 //CHAT
 app.post("/api/chat", async (req, res) => {
   const receivedData = req.body;
@@ -865,6 +872,7 @@ app.post("/api/project-suggestions", async (req, res) => {
     res.status(500).send("Error generating project suggestions");
   }
 });
+
 
 // Endpoint to save a project
 app.post("/api/projectSaved", async (req, res) => {
@@ -973,11 +981,9 @@ app.put("/api/updateproject", async (req, res) => {
   }
 });
 
-
-
-
-const AppPort = process.env.PORT || 5000;
-app.listen(AppPort, () => {
-  console.log(`Server is running on port ${AppPort}`);
+const AppPort = 5000;
+app.listen(5000, () => {
+  console.log(`Server is running on port ${5000}`);
 });
+
 exports.api = functions.https.onRequest(app);
