@@ -71,6 +71,7 @@ const userSchema = new mongoose.Schema({
     default: "nonadmin",
   },
   type: String,
+  uid:{type: String, required: true, unique: true},
   resetPasswordToken: { type: String, default: null },
   resetPasswordExpires: { type: Date, default: null },
   apiKey: { type: String, default: null }
@@ -90,6 +91,7 @@ const courseSchema = new mongoose.Schema({
 const projectSchema = new mongoose.Schema({
   title: { type: String, required: true },
   userId: { type: String, required: true }, 
+  firebaseUId: { type: String, required: true }, 
   email: { type: String, required: true }, 
   completed: { type: Boolean, default: false, required: true },
   github_url: { type: String },
@@ -103,7 +105,16 @@ const ProjectTemplateSchema = new mongoose.Schema({
       difficulty: { type: String, required: true },  // e.g., 'Beginner', 'Intermediate', 'Advanced'
       time: { type: String, required: true },         // e.g., '1 week', '2 weeks'
       date: { type: Date, default: Date.now },      // Date when the project was added
-      assignedTo: { type: [String], default: [] },   // Array to store user IDs who have saved the project
+      assignedTo: {
+        type: [
+          {
+            userid: { type: String, required: true },
+            title: { type: String, required: true }
+          }
+        ],
+        default: []
+      }
+         // Array to store user IDs who have saved the project
 }, { collection: 'main_projects' });
 
 // Create a Project model
@@ -122,36 +133,23 @@ app.use(cors(corsOptions));
 app.use(express.json());
 
 app.post("/api/signup", async (req, res) => {
-  const { email, mName, password, type } = req.body;
+  const { email, mName, password, type, uid } = req.body;
 
   try {
-    const estimate = await User.estimatedDocumentCount();
-    if (estimate > 0) {
-      const existingUser = await User.findOne({ email });
-      if (existingUser) {
-        return res.json({
-          success: false,
-          message: "User with this email already exists",
-        });
-      }
-      const newUser = new User({ email, mName, password, type });
-      await newUser.save();
-      res.json({
-        success: true,
-        message: "Account created successfully",
-        userId: newUser._id,
-      });
-    } else {
-      const newUser = new User({ email, mName, password, type });
-      await newUser.save();
-      // const newAdmin = new Admin({ email, mName, type: 'main' });
-      // await newAdmin.save();
-      res.json({
-        success: true,
-        message: "Account created successfully",
-        userId: newUser._id,
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.json({
+        success: false,
+        message: "User with this email already exists",
       });
     }
+    const newUser = new User({ email, mName, password, type, uid });
+    await newUser.save();
+    res.json({
+      success: true,
+      message: "Account created successfully",
+      userId: newUser._id,
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: "Internal server error" });
   }
@@ -190,7 +188,7 @@ app.post("/api/google/auth", async (req, res) => {
 
 //SIGNIN
 app.post("/api/signin", async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, firebaseUid } = req.body;
 
   try {
     const user = await User.findOne({ email });
@@ -200,18 +198,26 @@ app.post("/api/signin", async (req, res) => {
     }
 
     if (password === user.password) {
+      // Update the uid if it's missing or different
+      if (!user.uid || user.uid !== firebaseUid) {
+        user.uid = firebaseUid;
+        await user.save();
+      }
+
       return res.json({
         success: true,
         message: "SignIn successful",
-        userData: user,
+        userData: {
+          ...user.toObject(),
+          uid: user.uid // Ensure the updated uid is sent back
+        },
       });
     }
 
     res.json({ success: false, message: "Invalid email or password" });
   } catch (error) {
-    res
-      .status(500)
-      .json({ success: false, message: "Invalid email or password" });
+    console.error("Signin error:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 });
 
@@ -876,7 +882,7 @@ app.post("/api/project-suggestions", async (req, res) => {
 
 // Endpoint to save a project
 app.post("/api/projectSaved", async (req, res) => {
-  const { projectTitle, userId, email, completed = false, github_url } = req.body; // Destructure new fields
+  const { projectTitle, userId, email, completed = false, github_url, firebaseUId } = req.body; // Destructure new fields
 
   try {
     // Create a new project instance with the updated fields
@@ -885,7 +891,8 @@ app.post("/api/projectSaved", async (req, res) => {
       userId,
       email,
       completed, // Default to false if not provided
-      github_url // Optional field
+      github_url, // Optional field
+      firebaseUId
     });
 
     // Save the project to the database
@@ -899,11 +906,13 @@ app.post("/api/projectSaved", async (req, res) => {
 });
 
 app.get("/api/getprojects", async (req, res) => {
-  try {
-    // Fetch all projects from the database
-    const projects = await Project.find(); 
+  const { firebaseUId } = req.query; // Get firebaseUId from query parameters
 
-    if (!projects) {
+  try {
+    // Fetch projects for the specific user
+    const projects = await Project.find({ firebaseUId }); // Filter by firebaseUId
+
+    if (!projects.length) { // Check if projects array is empty
       return res.status(404).json({ success: false, message: "No projects found" });
     }
 
@@ -913,6 +922,20 @@ app.get("/api/getprojects", async (req, res) => {
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 });
+
+app.get("/api/getmyprojects", async (req, res) => {
+  try {
+      const projects = await Project.find(); 
+      if (!projects) {
+          return res.status(404).json({ success: false, message: "No projects found" });
+      }
+      res.json({ success: true, data: projects, message: "Projects fetched successfully" });
+  } catch (error) {
+      console.error("Error fetching projects:", error);
+      res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
 
 app.get("/api/getmainprojects", async (req, res) => {
   try {
@@ -927,6 +950,19 @@ app.get("/api/getmainprojects", async (req, res) => {
   } catch (error) {
     console.error("Error fetching main projects:", error);
     res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
+app.get("/api/getprojectsAdmin", async (req, res) => {
+  try {
+      const projects = await Project.find(); 
+      if (!projects) {
+          return res.status(404).json({ success: false, message: "No projects found" });
+      }
+      res.json({ success: true, data: projects, message: "Projects fetched successfully" });
+  } catch (error) {
+      console.error("Error fetching projects:", error);
+      res.status(500).json({ success: false, message: "Internal server error" });
   }
 });
 
@@ -960,14 +996,17 @@ app.post("/api/saveProject", async (req, res) => {
 });
 
 app.put("/api/updateproject", async (req, res) => {
-  const { projectTitle, userId } = req.body;
+  const { projectTitle, userId, title } = req.body; // Include title in the destructuring
   try {
     console.log("Received data:", req.body); // Log the received data for debugging
 
+    // Create the object to be added to the assignedTo array
+    const assignedObject = { userid: userId, title: title };
+
     const updatedProject = await ProjectTemplate.findOneAndUpdate(
-      { title: projectTitle },
-      { $addToSet: { assignedTo: userId } },
-      { new: true }
+      { title: projectTitle },  // Find the project by title
+      { $addToSet: { assignedTo: assignedObject } },  // Add the userId and title to assignedTo array
+      { new: true }  // Return the updated document
     );
 
     if (!updatedProject) {
@@ -981,9 +1020,47 @@ app.put("/api/updateproject", async (req, res) => {
   }
 });
 
+app.post("/api/updateuserproject", async (req, res) => {
+  try {
+    const { projectId, completed, github_url } = req.body;
+
+    // Ensure projectId is provided
+    if (!projectId) {
+      return res.status(400).json({ success: false, message: "Project ID is required" });
+    }
+
+    // Find the project by ID
+    const project = await Project.findById(projectId);
+
+    // If project not found, return 404
+    if (!project) {
+      return res.status(404).json({ success: false, message: "Project not found" });
+    }
+
+    // Update the project with the new data
+    if (typeof completed !== 'undefined') {
+      project.completed = completed;
+    }
+    if (github_url) {
+      project.github_url = github_url;
+    }
+
+    // Save the updated project
+    await project.save();
+
+    res.json({ success: true, message: "Project updated successfully", data: project });
+
+  } catch (error) {
+    console.error("Error updating project:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
+
 const AppPort = 5000;
 app.listen(5000, () => {
   console.log(`Server is running on port ${5000}`);
 });
 
 exports.api = functions.https.onRequest(app);
+
