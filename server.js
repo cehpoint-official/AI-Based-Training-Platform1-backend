@@ -86,6 +86,7 @@ const courseSchema = new mongoose.Schema({
   date: { type: Date, default: Date.now },
   end: { type: Date, default: Date.now },
   completed: { type: Boolean, default: false },
+  progress: { type: Number, default: 0 } // Add this line
 });
 
 const projectSchema = new mongoose.Schema({
@@ -117,13 +118,36 @@ const ProjectTemplateSchema = new mongoose.Schema({
          // Array to store user IDs who have saved the project
 }, { collection: 'main_projects' });
 
-// Create a Project model
-const Project = mongoose.model("Project", projectSchema);
-const ProjectTemplate = mongoose.model("ProjectTemplate", ProjectTemplateSchema);
+// Define the testUsers schema
+const testUserSchema = new mongoose.Schema({
+  fileName: { type: String, required: true },
+  uploadDate: { type: Date, default: Date.now },
+  fileUrl: { type: String, required: true },
+  status: { type: String, default: "uploaded" },
+  userId: { type: String, required: true },
+  userEmail: { type: String, default: "Unknown" },
+  userName: { type: String, default: "Unknown" },
+  // New fields for parsed resume data
+  skills: [{ type: String }],
+  experience: [{ type: String }],
+  education: [{ type: String }],
+  projects: [{ type: String }],
+  certifications: [{ type: String }],
+  // Optional: You might want to store the full extracted text as well
+  extractedText: { type: String },
+}, { collection: 'testUsers' });
 
 //MODEL
 const User = mongoose.model("User", userSchema);
 const Course = mongoose.model("Course", courseSchema);
+
+// Create a Project model
+const Project = mongoose.model("Project", projectSchema);
+const ProjectTemplate = mongoose.model("ProjectTemplate", ProjectTemplateSchema);
+
+// Test 
+const TestUser = mongoose.model("TestUser", testUserSchema);
+
 
 //REQUEST
 
@@ -282,11 +306,39 @@ app.get("/api/getusers", async (req, res) => {
 // GET COURSES
 app.get("/api/getcourses", async (req, res) => {
   try {
-    const courses = await Course.find({}, 'user content type mainTopic photo date end completed');
+    // Include 'progress' in the fields to retrieve
+    const courses = await Course.find({}, 'user content type mainTopic photo date end completed progress');
     res.json(courses);
   } catch (error) {
     console.error('Error fetching courses:', error);
     res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
+// UPDATE PROGRESS
+app.post("/api/updateProgress", async (req, res) => {
+  const { courseId, progress, completed } = req.body;
+  try {
+    await Course.findOneAndUpdate(
+      { _id: courseId },
+      { 
+        $set: { 
+          progress: progress,
+          completed: completed // This will set completed to true when progress is 100%
+        } 
+      },
+      { new: true }
+    );
+    res.json({ 
+      success: true, 
+      message: "Progress and completion status updated successfully" 
+    });
+  } catch (error) {
+    console.error('Error updating progress:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Internal server error" 
+    });
   }
 });
 
@@ -1055,6 +1107,60 @@ app.post("/api/updateuserproject", async (req, res) => {
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 });
+
+
+
+// ------------------------------------------------------------------------------------- //
+// Endpoint to add a new test user
+app.post("/api/testusers", async (req, res) => {
+  const { 
+    fileName, 
+    fileUrl, 
+    userId, 
+    userEmail, 
+    userName,
+    // Add new fields from parsed resume
+    skills = [],
+    experience = [],
+    education = [],
+    projects = [],
+    certifications = [],
+    extractedText = ""
+  } = req.body;
+
+  try {
+    const newTestUser = new TestUser({
+      fileName,
+      fileUrl,
+      userId,
+      userEmail,
+      userName,
+      // Include new fields
+      skills,
+      experience,
+      education,
+      projects,
+      certifications,
+      extractedText,
+      status: "processed" // Update status to indicate parsing is complete
+    });
+
+    await newTestUser.save();
+    res.status(201).json({ 
+      success: true, 
+      message: "Test user added successfully", 
+      data: newTestUser 
+    });
+  } catch (error) {
+    console.error("Error adding test user:", error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Internal server error",
+      error: error.message 
+    });
+  }
+});
+
 
 
 const AppPort = 5000;
