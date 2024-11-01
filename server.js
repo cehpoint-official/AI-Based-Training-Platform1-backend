@@ -82,8 +82,8 @@ app.set('unsplash', unsplash);
  * app.use('/api/projects', projectRoutes);
  * app.use('/api/ai', aiRoutes);
  * app.use('/api/dashboard', dashboardRoutes);
- * app.use('/api/questions', questionRoutes);
- * app.use('/api/resumes', resumeRoutes);
+ * app.use('/questions', questionRoutes);
+ * app.use('/resumes', resumeRoutes);
  * 
  * Current implementation uses simplified routes ('/api') instead of standard MVC structure
  * ('/api/resource') because:
@@ -101,9 +101,9 @@ app.use('/api', projectRoutes);
 app.use('/api', projectTemplateRoutes);
 app.use('/api', aiRoutes);
 app.use('/api', dashboardRoutes);
-app.use('/api', questionRoutes);
-app.use('/api', resumeRoutes);
-app.use('/api', testReportRoutes);
+app.use('/', questionRoutes);
+app.use('/', resumeRoutes);
+app.use('/', testReportRoutes);
 app.use('/api', testUserRoutes);
 
 // Error handling middleware

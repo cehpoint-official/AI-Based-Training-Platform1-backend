@@ -1,0 +1,258 @@
+{
+    "javascript": [
+        {
+            "id": "fallback_js_1",
+            "question": "Explain the difference between var, let, and const in JavaScript.",
+            "type": "text",
+            "skills": ["javascript"]
+        },
+        {
+            "id": "fallback_js_2",
+            "question": "How does event delegation work in JavaScript?",
+            "type": "text",
+            "skills": ["javascript"]
+        },
+        {
+            "id": "fallback_js_3",
+            "question": "What is closure in JavaScript and how can it be used?",
+            "type": "text",
+            "skills": ["javascript"]
+        },
+        {
+            "id": "fallback_js_4",
+            "question": "Describe how promises and async/await work in JavaScript.",
+            "type": "text",
+            "skills": ["javascript"]
+        },
+        {
+            "id": "fallback_js_5",
+            "question": "How do you prevent memory leaks in JavaScript applications?",
+            "type": "text",
+            "skills": ["javascript"]
+        }
+    ],
+    "react": [
+        {
+            "id": "fallback_react_1",
+            "question": "Explain the concept of React hooks and give examples of commonly used hooks.",
+            "type": "text",
+            "skills": ["react"]
+        },
+        {
+            "id": "fallback_react_2",
+            "question": "How do you manage state in your React applications?",
+            "type": "text",
+            "skills": ["react"]
+        },
+        {
+            "id": "fallback_react_3",
+            "question": "What is the virtual DOM in React and how does it improve performance?",
+            "type": "text",
+            "skills": ["react"]
+        },
+        {
+            "id": "fallback_react_4",
+            "question": "Describe the difference between controlled and uncontrolled components in React.",
+            "type": "text",
+            "skills": ["react"]
+        },
+        {
+            "id": "fallback_react_5",
+            "question": "How does React's context API help with state management?",
+            "type": "text",
+            "skills": ["react"]
+        }
+    ],
+    "python": [
+        {
+            "id": "fallback_python_1",
+            "question": "Explain list comprehension in Python with an example.",
+            "type": "text",
+            "skills": ["python"]
+        },
+        {
+            "id": "fallback_python_2",
+            "question": "How do you handle exceptions in Python?",
+            "type": "text",
+            "skills": ["python"]
+        },
+        {
+            "id": "fallback_python_3",
+            "question": "What is the purpose of decorators in Python, and how are they used?",
+            "type": "text",
+            "skills": ["python"]
+        },
+        {
+            "id": "fallback_python_4",
+            "question": "Describe the difference between shallow and deep copying in Python.",
+            "type": "text",
+            "skills": ["python"]
+        },
+        {
+            "id": "fallback_python_5",
+            "question": "How do you manage memory in Python, and what is garbage collection?",
+            "type": "text",
+            "skills": ["python"]
+        }
+    ],
+    "android": [
+        {
+            "id": "fallback_android_1",
+            "question": "Explain the Android activity lifecycle.",
+            "type": "text",
+            "skills": ["android"]
+        },
+        {
+            "id": "fallback_android_2",
+            "question": "How do you handle background processes in Android?",
+            "type": "text",
+            "skills": ["android"]
+        },
+        {
+            "id": "fallback_android_3",
+            "question": "What is the difference between an Intent and an Intent Filter in Android?",
+            "type": "text",
+            "skills": ["android"]
+        },
+        {
+            "id": "fallback_android_4",
+            "question": "Explain the role of RecyclerView in Android and how it improves performance.",
+            "type": "text",
+            "skills": ["android"]
+        },
+        {
+            "id": "fallback_android_5",
+            "question": "Describe how to store data locally in an Android application.",
+            "type": "text",
+            "skills": ["android"]
+        }
+    ],
+    "java": [
+        {
+            "id": "fallback_java_1",
+            "question": "Explain the concept of inheritance and polymorphism in Java.",
+            "type": "text",
+            "skills": ["java"]
+        },
+        {
+            "id": "fallback_java_2",
+            "question": "How do you handle exceptions in Java?",
+            "type": "text",
+            "skills": ["java"]
+        },
+        {
+            "id": "fallback_java_3",
+            "question": "What is the difference between an interface and an abstract class in Java?",
+            "type": "text",
+            "skills": ["java"]
+        },
+        {
+            "id": "fallback_java_4",
+            "question": "Explain the concept of threads and synchronization in Java.",
+            "type": "text",
+            "skills": ["java"]
+        },
+        {
+            "id": "fallback_java_5",
+            "question": "How does garbage collection work in Java?",
+            "type": "text",
+            "skills": ["java"]
+        }
+    ],
+    "web development": [
+        {
+            "id": "fallback_web_1",
+            "question": "Explain the difference between localStorage and sessionStorage.",
+            "type": "text",
+            "skills": ["web development"]
+        },
+        {
+            "id": "fallback_web_2",
+            "question": "How do you ensure your web applications are responsive?",
+            "type": "text",
+            "skills": ["web development"]
+        },
+        {
+            "id": "fallback_web_3",
+            "question": "What is the box model in CSS, and how does it affect layout?",
+            "type": "text",
+            "skills": ["web development"]
+        },
+        {
+            "id": "fallback_web_4",
+            "question": "How does a browser render a webpage from HTML and CSS?",
+            "type": "text",
+            "skills": ["web development"]
+        },
+        {
+            "id": "fallback_web_5",
+            "question": "Explain the concept of progressive enhancement in web development.",
+            "type": "text",
+            "skills": ["web development"]
+        }
+    ],
+    "node.js": [
+        {
+            "id": "fallback_node_1",
+            "question": "Explain the event loop in Node.js.",
+            "type": "text",
+            "skills": ["node.js"]
+        },
+        {
+            "id": "fallback_node_2",
+            "question": "How do you handle asynchronous operations in Node.js?",
+            "type": "text",
+            "skills": ["node.js"]
+        },
+        {
+            "id": "fallback_node_3",
+            "question": "What are streams in Node.js, and how do they work?",
+            "type": "text",
+            "skills": ["node.js"]
+        },
+        {
+            "id": "fallback_node_4",
+            "question": "Explain the concept of middleware in Node.js.",
+            "type": "text",
+            "skills": ["node.js"]
+        },
+        {
+            "id": "fallback_node_5",
+            "question": "What is the purpose of the 'buffer' module in Node.js?",
+            "type": "text",
+            "skills": ["node.js"]
+        }
+    ],
+    "database": [
+        {
+            "id": "fallback_db_1",
+            "question": "Explain the difference between SQL and NoSQL databases.",
+            "type": "text",
+            "skills": ["database"]
+        },
+        {
+            "id": "fallback_db_2",
+            "question": "How do you optimize database queries for better performance?",
+            "type": "text",
+            "skills": ["database"]
+        },
+        {
+            "id": "fallback_db_3",
+            "question": "What is database indexing, and how does it improve query speed?",
+            "type": "text",
+            "skills": ["database"]
+        },
+        {
+            "id": "fallback_db_4",
+            "question": "Explain the concept of normalization in databases.",
+            "type": "text",
+            "skills": ["database"]
+        },
+        {
+            "id": "fallback_db_5",
+            "question": "Describe ACID properties in the context of databases.",
+            "type": "text",
+            "skills": ["database"]
+        }
+    ]
+}

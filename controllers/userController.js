@@ -14,29 +14,6 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-exports.signup = async (req, res) => {
-  const { email, mName, password, type, uid } = req.body;
-
-  try {
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.json({
-        success: false,
-        message: "User with this email already exists",
-      });
-    }
-    const newUser = new User({ email, mName, password, type, uid });
-    await newUser.save();
-    res.json({
-      success: true,
-      message: "Account created successfully",
-      userId: newUser._id,
-    });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Internal server error" });
-  }
-};
-
 exports.signin = async (req, res) => {
   const { email, password, firebaseUid } = req.body;
 
@@ -71,11 +48,45 @@ exports.signin = async (req, res) => {
   }
 };
 
-exports.googleAuth = async (req, res) => {
-  const { name, email, token } = req.body;
+exports.signup = async (req, res) => {
+  const { email, mName, password, type, uid } = req.body;
+
   try {
     const existingUser = await User.findOne({ email });
     if (existingUser) {
+      return res.json({
+        success: false,
+        message: "User with this email already exists",
+      });
+    }
+    const newUser = new User({
+      email,
+      mName,
+      password,
+      type,
+      uid,
+      profile: 'https://firebasestorage.googleapis.com/v0/b/ai-based-training-platfo-ca895.appspot.com/o/user.png?alt=media&[REDACTED:Generic API Key]' // Default profile image
+    });
+    await newUser.save();
+    res.json({
+      success: true,
+      message: "Account created successfully",
+      userId: newUser._id,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+exports.googleAuth = async (req, res) => {
+  const { name, email, token, googleProfileImage } = req.body;
+  try {
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      if (!existingUser.uid) {
+        existingUser.uid = uid;
+        await existingUser.save();
+      }
       if (!existingUser.password) {
         return res.json({
           success: true,
@@ -90,11 +101,16 @@ exports.googleAuth = async (req, res) => {
         userData: existingUser,
       });
     }
-    const newUser = new User({ email, mName: name, resetPasswordToken: token });
+    const newUser = new User({
+      email,
+      mName: name,
+      resetPasswordToken: token,
+      profile: googleProfileImage 
+    });
     await newUser.save();
     res.json({
       success: true,
-      message: "Account created successfully Please set Password",
+      message: "Account created successfully. Please set Password",
       userData: newUser,
     });
   } catch (error) {
@@ -162,6 +178,27 @@ exports.resetPassword = async (req, res) => {
       email: user.email,
     });
   } catch (error) {
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+exports.getProfile = async (req, res) => {
+  const { uid } = req.query; // Assuming the UID is passed as a query parameter
+
+  try {
+    // Fetch the user by their unique identifier (UID)
+    const user = await User.findOne({ uid }, 'email mName profile type uid role');
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    res.json({
+      success: true,
+      userProfile: user,
+    });
+  } catch (error) {
+    console.error('Error fetching user profile:', error);
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 };

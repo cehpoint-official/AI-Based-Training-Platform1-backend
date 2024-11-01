@@ -1,0 +1,152 @@
+[
+    {
+        "id": "fallback_excel_1",
+        "question": "Explain how you use Excel to manage and analyze data effectively.",
+        "type": "text",
+        "skills": ["excel"]
+    },
+    {
+        "id": "fallback_excel_2",
+        "question": "How do you use pivot tables in Excel to summarize data?",
+        "type": "text",
+        "skills": ["excel"]
+    },
+    {
+        "id": "fallback_excel_3",
+        "question": "Describe a scenario where you used Excel formulas to automate data calculations.",
+        "type": "text",
+        "skills": ["excel"]
+    },
+    {
+        "id": "fallback_excel_4",
+        "question": "How do you ensure data accuracy and integrity in large Excel spreadsheets?",
+        "type": "text",
+        "skills": ["excel"]
+    },
+    {
+        "id": "fallback_excel_5",
+        "question": "Can you give an example of how you've used charts or graphs in Excel to present data?",
+        "type": "text",
+        "skills": ["excel"]
+    },
+    {
+        "id": "fallback_communication_1",
+        "question": "Describe a time when you had to present complex information to a non-technical audience.",
+        "type": "text",
+        "skills": ["communication"]
+    },
+    {
+        "id": "fallback_communication_2",
+        "question": "How do you approach giving constructive feedback to a team member?",
+        "type": "text",
+        "skills": ["communication"]
+    },
+    {
+        "id": "fallback_communication_3",
+        "question": "Can you describe an instance when you had to negotiate with a team to achieve a common goal?",
+        "type": "text",
+        "skills": ["communication"]
+    },
+    {
+        "id": "fallback_communication_4",
+        "question": "How do you ensure clear communication in collaborative projects?",
+        "type": "text",
+        "skills": ["communication"]
+    },
+    {
+        "id": "fallback_communication_5",
+        "question": "Explain how you would handle a situation where a client misunderstood your instructions.",
+        "type": "text",
+        "skills": ["communication"]
+    },
+    {
+        "id": "fallback_generic_1",
+        "question": "Tell me about a significant project you have worked on and your role in it.",
+        "type": "text",
+        "skills": ["project-experience"]
+    },
+    {
+        "id": "fallback_generic_2",
+        "question": "What programming languages are you most proficient in and why do you prefer them?",
+        "type": "text",
+        "skills": ["technical-skills"]
+    },
+    {
+        "id": "fallback_generic_3",
+        "question": "Describe a challenging bug you encountered and how you resolved it.",
+        "type": "text",
+        "skills": ["problem-solving"]
+    },
+    {
+        "id": "fallback_generic_4",
+        "question": "How do you keep up with the latest technology trends and updates in your field?",
+        "type": "text",
+        "skills": ["technical-skills"]
+    },
+    {
+        "id": "fallback_generic_5",
+        "question": "Can you explain a time when you had to quickly learn a new tool or technology?",
+        "type": "text",
+        "skills": ["adaptability"]
+    },
+    {
+        "id": "fallback_generic_6",
+        "question": "What is your approach to working within a team, and how do you handle conflicts?",
+        "type": "text",
+        "skills": ["teamwork"]
+    },
+    {
+        "id": "fallback_generic_7",
+        "question": "Explain a project where you applied your technical skills to solve a real-world problem.",
+        "type": "text",
+        "skills": ["project-experience"]
+    },
+    {
+        "id": "fallback_generic_8",
+        "question": "What are some best practices you follow to ensure code quality and readability?",
+        "type": "text",
+        "skills": ["technical-skills"]
+    },
+    {
+        "id": "fallback_generic_9",
+        "question": "How do you prioritize tasks when working on multiple projects or deadlines?",
+        "type": "text",
+        "skills": ["time-management"]
+    },
+    {
+        "id": "fallback_generic_10",
+        "question": "Describe how you approach testing and debugging in your projects.",
+        "type": "text",
+        "skills": ["technical-skills"]
+    },
+    {
+        "id": "fallback_generic_11",
+        "question": "Can you share an example of how you optimized performance in one of your projects?",
+        "type": "text",
+        "skills": ["problem-solving"]
+    },
+    {
+        "id": "fallback_generic_12",
+        "question": "What are some tools or techniques you use for version control and collaboration?",
+        "type": "text",
+        "skills": ["technical-skills"]
+    },
+    {
+        "id": "fallback_generic_13",
+        "question": "What steps do you take to ensure your code is scalable and maintainable?",
+        "type": "text",
+        "skills": ["technical-skills"]
+    },
+    {
+        "id": "fallback_generic_14",
+        "question": "How do you handle feedback on your work, especially in a technical review?",
+        "type": "text",
+        "skills": ["communication"]
+    },
+    {
+        "id": "fallback_generic_15",
+        "question": "Can you describe a time when you improved a process or workflow in a project?",
+        "type": "text",
+        "skills": ["problem-solving", "project-experience"]
+    }
+]

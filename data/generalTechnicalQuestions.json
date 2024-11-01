@@ -1,0 +1,122 @@
+[
+    {
+        "id": "general_tech_1",
+        "question": "Describe the steps you take to debug a complex issue in your code.",
+        "type": "text",
+        "skills": ["general-technical"]
+    },
+    {
+        "id": "general_tech_2",
+        "question": "What is your approach to learning and mastering new programming languages or frameworks?",
+        "type": "text",
+        "skills": ["general-technical"]
+    },
+    {
+        "id": "general_tech_3",
+        "question": "Can you explain the difference between object-oriented and functional programming?",
+        "type": "text",
+        "skills": ["general-technical"]
+    },
+    {
+        "id": "general_tech_4",
+        "question": "How do you ensure your code is optimized and efficient?",
+        "type": "text",
+        "skills": ["general-technical"]
+    },
+    {
+        "id": "general_tech_5",
+        "question": "What strategies do you use to handle memory management in programming?",
+        "type": "text",
+        "skills": ["general-technical"]
+    },
+    {
+        "id": "dsa_1",
+        "question": "Explain the difference between an array and a linked list.",
+        "type": "text",
+        "skills": ["dsa"]
+    },
+    {
+        "id": "dsa_2",
+        "question": "How does a binary search algorithm work, and when would you use it?",
+        "type": "text",
+        "skills": ["dsa"]
+    },
+    {
+        "id": "dsa_3",
+        "question": "What is a hash table, and what are its primary use cases?",
+        "type": "text",
+        "skills": ["dsa"]
+    },
+    {
+        "id": "dsa_4",
+        "question": "How would you detect a cycle in a linked list?",
+        "type": "text",
+        "skills": ["dsa"]
+    },
+    {
+        "id": "dsa_5",
+        "question": "Describe the difference between breadth-first and depth-first search.",
+        "type": "text",
+        "skills": ["dsa"]
+    },
+    {
+        "id": "oops_1",
+        "question": "What is polymorphism in OOP, and can you provide an example?",
+        "type": "text",
+        "skills": ["oops"]
+    },
+    {
+        "id": "oops_2",
+        "question": "Explain the concept of encapsulation and how it benefits software design.",
+        "type": "text",
+        "skills": ["oops"]
+    },
+    {
+        "id": "oops_3",
+        "question": "What is the purpose of inheritance in object-oriented programming?",
+        "type": "text",
+        "skills": ["oops"]
+    },
+    {
+        "id": "oops_4",
+        "question": "How does abstraction differ from encapsulation in OOP?",
+        "type": "text",
+        "skills": ["oops"]
+    },
+    {
+        "id": "oops_5",
+        "question": "What are design patterns, and why are they important in OOP?",
+        "type": "text",
+        "skills": ["oops"]
+    },
+    {
+        "id": "os_1",
+        "question": "Explain the concept of a process in an operating system.",
+        "type": "text",
+        "skills": ["os"]
+    },
+    {
+        "id": "os_2",
+        "question": "What is a deadlock, and how can it be prevented?",
+        "type": "text",
+        "skills": ["os"]
+    },
+    {
+        "id": "os_3",
+        "question": "Can you describe the difference between a thread and a process?",
+        "type": "text",
+        "skills": ["os"]
+    },
+    {
+        "id": "os_4",
+        "question": "How does virtual memory work in an operating system?",
+        "type": "text",
+        "skills": ["os"]
+    },
+    {
+        "id": "os_5",
+        "question": "What are the different types of scheduling algorithms in an OS?",
+        "type": "text",
+        "skills": ["os"]
+    }
+]
