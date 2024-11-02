@@ -17,7 +17,7 @@ function getRandomQuestions(questionsArray, count) {
 }
 
 exports.fetchQuestions = async (req, res) => {
-  console.log("Received request body:", req.body);
+  // console.log("Received request body:", req.body);
   const { skills } = req.body;
 
   try {
@@ -33,7 +33,7 @@ exports.fetchQuestions = async (req, res) => {
       .filter((skill) => skill && typeof skill === "string" && skill.length > 0)
       .map((skill) => skill.toLowerCase());
 
-    console.log("Cleaned skills array:", cleanedSkills);
+    // console.log("Cleaned skills array:", cleanedSkills);
 
     const allQuestions = [];
 
@@ -43,7 +43,7 @@ exports.fetchQuestions = async (req, res) => {
         skills: { $in: cleanedSkills },
       }).limit(10);
 
-      console.log(`Found ${dbQuestions.length} questions in database`);
+      // console.log(`Found ${dbQuestions.length} questions in database`);
       allQuestions.push(...dbQuestions);
     } catch (dbError) {
       console.error("Database query error:", dbError);
@@ -53,7 +53,7 @@ exports.fetchQuestions = async (req, res) => {
     // Generate AI questions if needed
     if (allQuestions.length < 5) {
       try {
-        console.log("Generating additional AI questions...");
+        // console.log("Generating additional AI questions...");
         const additionalQuestions = await generateAdditionalQuestionsAI(
           cleanedSkills,
           5 - allQuestions.length

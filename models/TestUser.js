@@ -15,7 +15,10 @@ const testUserSchema = new mongoose.Schema(
     education: [{ type: String }],
     projects: [{ type: String }],
     certifications: [{ type: String }],
-    // Optional: You might want to store the full extracted text as well
+    recordings: {
+      screen: { type: String, default: '' }, 
+      face: { type: String, default: '' },  
+    },
     extractedText: { type: String },
   },
   { collection: "testUsers" }

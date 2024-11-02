@@ -100,3 +100,29 @@ exports.updateTestReport = async (req, res) => {
         });
     }
 };
+
+exports.getAllTestReports = async (req, res) => {
+    try {
+        const testReports = await TestReport.find({}, 'name email uid createdAt reportData');
+
+        if (!testReports || testReports.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "No test reports found"
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: "Test reports retrieved successfully",
+            data: testReports
+        });
+    } catch (error) {
+        console.error("Error fetching test reports:", error);
+        res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: error.message
+        });
+    }
+};

@@ -6,11 +6,11 @@ const userSchema = new mongoose.Schema({
   password: String,
   profile: {
     type: String,
-    default: "https://firebasestorage.googleapis.com/v0/b/ai-based-training-platfo-ca895.appspot.com/o/user.png?alt=media&token=9c07ad9f-2390-4717-b83e-8af33a5da8d2"
+    default: "https://firebasestorage.googleapis.com/v0/b/ai-based-training-platfo-ca895.appspot.com/o/user.png?alt=media&token=cdde4ad1-26e7-4edb-9f7b-a3172fbada8d"
   },
   role: {
     type: String,
-    default: "nonadmin",
+    default: "user",
   },
   type: String,
   uid: { type: String, required: true, unique: true },

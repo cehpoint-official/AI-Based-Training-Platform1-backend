@@ -79,14 +79,11 @@ exports.signup = async (req, res) => {
 };
 
 exports.googleAuth = async (req, res) => {
-  const { name, email, token, googleProfileImage } = req.body;
+  const { name, email, uid, googleProfileImage } = req.body;
+  console.log("Google Auth Request:", req.body); // Debugging line
   try {
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      if (!existingUser.uid) {
-        existingUser.uid = uid;
-        await existingUser.save();
-      }
       if (!existingUser.password) {
         return res.json({
           success: true,
@@ -104,8 +101,8 @@ exports.googleAuth = async (req, res) => {
     const newUser = new User({
       email,
       mName: name,
-      resetPasswordToken: token,
-      profile: googleProfileImage 
+      uid: uid,
+      profile: googleProfileImage,
     });
     await newUser.save();
     res.json({
@@ -117,6 +114,8 @@ exports.googleAuth = async (req, res) => {
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
+
+
 
 exports.forgotPassword = async (req, res) => {
   const { email, name, company, logo } = req.body;

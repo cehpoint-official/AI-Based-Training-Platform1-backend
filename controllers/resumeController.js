@@ -94,3 +94,30 @@ exports.uploadResume = async (req, res) => {
         });
     }
 };
+
+exports.getAllResumes = async (req, res) => {
+    try {
+        // Fetch all resumes from the database
+        const resumes = await Resume.find({}, 'name email uid createdAt resumeData');
+
+        if (!resumes || resumes.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "No resumes found"
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: "Resumes retrieved successfully",
+            data: resumes
+        });
+    } catch (error) {
+        console.error("Error fetching resumes:", error);
+        res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: error.message
+        });
+    }
+};
