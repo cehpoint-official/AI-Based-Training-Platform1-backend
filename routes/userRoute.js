@@ -16,8 +16,5 @@ userRouter.post("/forgot", forgetPassword);
 userRouter.post("/reset-password", resetPassword);
 
 
-
-
-
 export default userRouter
 

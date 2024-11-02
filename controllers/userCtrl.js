@@ -180,36 +180,31 @@ const forgetPassword = asyncHandler(async (req, res) => {
 });
 
 const userProfile = asyncHandler(async (req, res) => {
-  const { email, mName, password, uid } = req.body;
+  const { email, mName, password, uid, apiKey, unsplashApiKey} = req.body;
   try {
-    if (password === "") {
-      await User.findOneAndUpdate(
-        { _id: uid },
-        { $set: { email: email, mName: mName } }
-      )
-        .then((result) => {
-          res.json({ success: true, message: "Profile Updated" });
-        })
-        .catch((error) => {
-          res
-            .status(500)
-            .json({ success: false, message: "Internal server error" });
-        });
-    } else {
-      await User.findOneAndUpdate(
-        { _id: uid },
-        { $set: { email: email, mName: mName, password: password } }
-      )
-        .then((result) => {
-          res.json({ success: true, message: "Profile Updated" });
-        })
-        .catch((error) => {
-          res
-            .status(500)
-            .json({ success: false, message: "Internal server error" });
-        });
+    const updateData = { email, mName };
+    if (password !== "") {
+      updateData.password = password;
     }
+    if (apiKey) {
+      updateData.apiKey = apiKey;
+    }
+    if(unsplashApiKey){
+      updateData.unsplashApiKey = unsplashApiKey;
+    }
+    await User.findOneAndUpdate(
+      { _id: uid },
+      { $set: updateData }
+    )
+      .then((result) => {
+        res.json({ success: true, message: "Profile Updated" });
+      })
+      .catch((error) => {
+        console.error("Error updating profile:", error);
+        res.status(500).json({ success: false, message: "Internal server error" });
+      });
   } catch (error) {
+    console.error("Error in profile update:", error);
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 });
