@@ -1,6 +1,6 @@
-const TestUser = require('../models/TestUser');
+import TestUser from '../models/TestUser.js';
 
-exports.createTestUser = async (req, res) => {
+export const createTestUser = async (req, res) => {
     const {
         fileName,
         fileUrl,
@@ -48,7 +48,7 @@ exports.createTestUser = async (req, res) => {
     }
 };
 
-exports.getAllTestUsers = async (req, res) => {
+export const getAllTestUsers = async (req, res) => {
     try {
         // Fetch all test users from the database
         const testUsers = await TestUser.find({}, 'userId fileName userEmail userName status recordings');
@@ -75,7 +75,7 @@ exports.getAllTestUsers = async (req, res) => {
     }
 }
 
-exports.updateRecordings = async (req, res) => {
+export const updateRecordings = async (req, res) => {
     const { userId, screenUrl, faceUrl } = req.body;
   
     // Check only for userId, since screenUrl or faceUrl might be null

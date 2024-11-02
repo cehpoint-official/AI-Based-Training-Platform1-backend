@@ -1,7 +1,8 @@
-const express = require('express');
+import express from 'express';
+import * as questionController from '../controllers/questionController.js';
+
 const router = express.Router();
-const questionController = require('../controllers/questionController');
 
 router.post('/fetch-questions', questionController.fetchQuestions);
 
-module.exports = router;
+export default router;

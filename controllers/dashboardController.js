@@ -1,7 +1,7 @@
-const User = require('../models/User');
-const Course = require('../models/Course');
+import User from '../models/User.js';
+import Course from '../models/Course.js';
 
-exports.getDashboardData = async (req, res) => {
+export const getDashboardData = async (req, res) => {
     try {
         // Get total number of users
         const userCount = await User.countDocuments();

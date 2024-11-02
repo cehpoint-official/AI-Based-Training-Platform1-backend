@@ -1,26 +1,28 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-const bodyParser = require('body-parser');
-const nodemailer = require('nodemailer');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
-const { createApi } = require('unsplash-js');
-require('dotenv').config();
+import express from 'express';
+import mongoose from 'mongoose';
+import cors from 'cors';
+import bodyParser from 'body-parser';
+import nodemailer from 'nodemailer';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+import { createApi } from 'unsplash-js';
+import dotenv from 'dotenv';
 
 // Import routes
-const userRoutes = require('./routes/userRoutes');
-const courseRoutes = require('./routes/courseRoutes');
-const projectRoutes = require('./routes/projectRoutes');
-const aiRoutes = require('./routes/aiRoutes');
-const dashboardRoutes = require('./routes/dashboardRoutes');
-const questionRoutes = require('./routes/questionRoutes');
-const resumeRoutes = require('./routes/resumeRoutes');
-const testReportRoutes = require('./routes/testReportRoutes');
-const testUserRoutes = require('./routes/testUserRoutes');
-const projectTemplateRoutes = require('./routes/projectTemplateRoutes');
+import userRoutes from './routes/userRoutes.js';
+import courseRoutes from './routes/courseRoutes.js';
+import projectRoutes from './routes/projectRoutes.js';
+import aiRoutes from './routes/aiRoutes.js';
+import dashboardRoutes from './routes/dashboardRoutes.js';
+import questionRoutes from './routes/questionRoutes.js';
+import resumeRoutes from './routes/resumeRoutes.js';
+import testReportRoutes from './routes/testReportRoutes.js';
+import testUserRoutes from './routes/testUserRoutes.js';
+import projectTemplateRoutes from './routes/projectTemplateRoutes.js';
 
 // Import database connection
-const connectDB = require('./config/db');
+import connectDB from './config/db.js';
+
+dotenv.config();
 
 const app = express();
 
@@ -118,4 +120,4 @@ app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
 
-module.exports = app;
+export default app;

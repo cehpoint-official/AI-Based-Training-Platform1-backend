@@ -1,6 +1,6 @@
-const TestReport = require('../models/TestReport');
+import TestReport from '../models/TestReport.js';
 
-exports.createTestReport = async (req, res) => {
+export const createTestReport = async (req, res) => {
     try {
         const { name, email, uid, reportData } = req.body;
 
@@ -30,7 +30,7 @@ exports.createTestReport = async (req, res) => {
     }
 };
 
-exports.getTestReport = async (req, res) => {
+export const getTestReport = async (req, res) => {
     try {
         const testReport = await TestReport.findOne({ uid: req.params.uid });
         
@@ -56,7 +56,7 @@ exports.getTestReport = async (req, res) => {
     }
 };
 
-exports.updateTestReport = async (req, res) => {
+export const updateTestReport = async (req, res) => {
     try {
         const { uid } = req.params;
         const { 
@@ -101,7 +101,7 @@ exports.updateTestReport = async (req, res) => {
     }
 };
 
-exports.getAllTestReports = async (req, res) => {
+export const getAllTestReports = async (req, res) => {
     try {
         const testReports = await TestReport.find({}, 'name email uid createdAt reportData');
 

@@ -1,6 +1,6 @@
-const fetch = require('node-fetch');
+import fetch from 'node-fetch';
 
-exports.generateAdditionalQuestionsAI = async (skills, limit) => {
+export const generateAdditionalQuestionsAI = async (skills, limit) => {
     console.log(`Generating ${limit} AI questions for skills:`, skills);
     
     const url = process.env.CHATGPT_API_URL;

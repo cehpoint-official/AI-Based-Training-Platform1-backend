@@ -1,6 +1,6 @@
-const User = require('../models/User'); // Assuming you have a User model
-const crypto = require('crypto');
-const nodemailer = require('nodemailer');
+import User from '../models/User.js'; 
+import crypto from 'crypto';
+import nodemailer from 'nodemailer';
 
 // Configure your nodemailer transporter here
 const transporter = nodemailer.createTransport({
@@ -14,7 +14,7 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-exports.signin = async (req, res) => {
+export const signin = async (req, res) => {
   const { email, password, firebaseUid } = req.body;
 
   try {
@@ -48,7 +48,7 @@ exports.signin = async (req, res) => {
   }
 };
 
-exports.signup = async (req, res) => {
+export const signup = async (req, res) => {
   const { email, mName, password, type, uid } = req.body;
 
   try {
@@ -78,7 +78,7 @@ exports.signup = async (req, res) => {
   }
 };
 
-exports.googleAuth = async (req, res) => {
+export const googleAuth = async (req, res) => {
   const { name, email, uid, googleProfileImage } = req.body;
   console.log("Google Auth Request:", req.body); // Debugging line
   try {
@@ -117,7 +117,7 @@ exports.googleAuth = async (req, res) => {
 
 
 
-exports.forgotPassword = async (req, res) => {
+export const forgotPassword = async (req, res) => {
   const { email, name, company, logo } = req.body;
 
   try {
@@ -152,7 +152,7 @@ exports.forgotPassword = async (req, res) => {
   }
 };
 
-exports.resetPassword = async (req, res) => {
+export const resetPassword = async (req, res) => {
   const { password, token } = req.body;
 
   try {
@@ -181,7 +181,7 @@ exports.resetPassword = async (req, res) => {
   }
 };
 
-exports.getProfile = async (req, res) => {
+export const getProfile = async (req, res) => {
   const { uid } = req.query; // Assuming the UID is passed as a query parameter
 
   try {
@@ -202,7 +202,7 @@ exports.getProfile = async (req, res) => {
   }
 };
 
-exports.updateProfile = async (req, res) => {
+export const updateProfile = async (req, res) => {
   const { email, mName, password, uid, apiKey } = req.body;
   try {
     const updateData = { email, mName };
@@ -223,7 +223,7 @@ exports.updateProfile = async (req, res) => {
   }
 };
 
-exports.getUsers = async (req, res) => {
+export const getUsers = async (req, res) => {
   try {
     const users = await User.find({}, 'email mName type _id');
     res.json(users);
@@ -233,7 +233,7 @@ exports.getUsers = async (req, res) => {
   }
 };
 
-exports.getUserById = async (req, res) => {
+export const getUserById = async (req, res) => {
   const { id } = req.query; // Change this to req.query
 
   try {
@@ -254,7 +254,7 @@ exports.getUserById = async (req, res) => {
   }
 };
 
-exports.getAdmins = async (req, res) => {
+export const getAdmins = async (req, res) => {
   try {
     const admins = await User.find({ role: "admin" }, 'email mName');
     const regularUsers = await User.find({ role: { $ne: "admin" } }, 'email mName');
@@ -265,7 +265,7 @@ exports.getAdmins = async (req, res) => {
   }
 };
 
-exports.addAdmin = async (req, res) => {
+export const addAdmin = async (req, res) => {
   try {
     const { email } = req.body;
     const user = await User.findOne({ email });
@@ -288,7 +288,7 @@ exports.addAdmin = async (req, res) => {
   }
 };
 
-exports.removeAdmin = async (req, res) => {
+export const removeAdmin = async (req, res) => {
   try {
     const { email } = req.body;
     const user = await User.findOne({ email });

@@ -1,9 +1,10 @@
-const express = require('express');
+import express from 'express';
+import * as testUserController from '../controllers/testUserController.js';
+
 const router = express.Router();
-const testUserController = require('../controllers/testUserController');
 
 router.post('/testusers', testUserController.createTestUser);
 router.get('/testuser/getalltestuser', testUserController.getAllTestUsers);
 router.put('/updaterecordings', testUserController.updateRecordings);
 
-module.exports = router;
+export default router;

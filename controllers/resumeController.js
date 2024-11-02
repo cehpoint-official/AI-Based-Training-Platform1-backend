@@ -1,7 +1,6 @@
-const Resume = require('../models/Resume');
+import Resume from '../models/Resume.js';
 
-
-exports.createResume = async (req, res) => {
+export const createResume = async (req, res) => {
     try {
         const { name, email, resumeData, uid } = req.body;
 
@@ -39,7 +38,7 @@ exports.createResume = async (req, res) => {
     }
 };
 
-exports.getResume = async (req, res) => {
+export const getResume = async (req, res) => {
     try {
         const resume = await Resume.findOne({ uid: req.params.uid });
         
@@ -65,7 +64,7 @@ exports.getResume = async (req, res) => {
     }
 };
 
-exports.uploadResume = async (req, res) => {
+export const uploadResume = async (req, res) => {
     try {
         const { userName, resumeBlob } = req.body;
 
@@ -95,7 +94,7 @@ exports.uploadResume = async (req, res) => {
     }
 };
 
-exports.getAllResumes = async (req, res) => {
+export const getAllResumes = async (req, res) => {
     try {
         // Fetch all resumes from the database
         const resumes = await Resume.find({}, 'name email uid createdAt resumeData');

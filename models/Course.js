@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from 'mongoose';
 
 const courseSchema = new mongoose.Schema({
   user: String,
@@ -12,4 +12,4 @@ const courseSchema = new mongoose.Schema({
   progress: { type: Number, default: 0 }, // Add this line
 });
 
-module.exports = mongoose.model("Course", courseSchema);
+export default mongoose.model("Course", courseSchema);

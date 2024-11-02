@@ -1,7 +1,7 @@
-const Project = require("../models/Project"); // Assuming you have a Project model
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+import Project from "../models/Project.js"; // Assuming you have a Project model
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
-exports.getProjectForAdmin = async (req, res) => {
+export const getProjectForAdmin = async (req, res) => {
   try {
     const projects = await Project.find(); 
     if (!projects) {
@@ -14,7 +14,7 @@ exports.getProjectForAdmin = async (req, res) => {
 }
 };
 
-exports.saveProject = async (req, res) => {
+export const saveProject = async (req, res) => {
   const { projectTitle, description, difficulty, time, userId, email, completed = false, github_url, firebaseUId, video_url } = req.body;
 
   try {
@@ -40,7 +40,7 @@ exports.saveProject = async (req, res) => {
   }
 };
 
-exports.getUserProjects = async (req, res) => {
+export const getUserProjects = async (req, res) => {
   const { firebaseUId } = req.query;
 
   try {
@@ -61,7 +61,7 @@ exports.getUserProjects = async (req, res) => {
   }
 };
 
-exports.getMyProjects = async (req, res) => {
+export const getMyProjects = async (req, res) => {
   try {
     const projects = await Project.find();
     if (!projects) {
@@ -80,7 +80,7 @@ exports.getMyProjects = async (req, res) => {
   }
 };
 
-exports.updateUserProject = async (req, res) => {
+export const updateUserProject = async (req, res) => {
   try {
       const { projectId, completed, github_url, video_url, approve, description, difficulty, time } = req.body;
 
@@ -112,7 +112,7 @@ exports.updateUserProject = async (req, res) => {
 };
 
 // Approve a project
-exports.approveProject = async (req, res) => {
+export const approveProject = async (req, res) => {
   const { projectId } = req.body;
 
   if (!projectId) {
@@ -145,7 +145,7 @@ exports.approveProject = async (req, res) => {
 };
 
 // Reject a project
-exports.rejectProject = async (req, res) => {
+export const rejectProject = async (req, res) => {
   const { projectId } = req.body;
 
   if (!projectId) {

@@ -1,6 +1,7 @@
-const express = require('express');
+import express from 'express';
+import * as aiController from '../controllers/aiController.js';
+
 const router = express.Router();
-const aiController = require('../controllers/aiController');
 
 router.post('/prompt', aiController.handlePrompt);
 router.post('/generate', aiController.generateContent);
@@ -11,4 +12,4 @@ router.post('/yt', aiController.getYouTubeVideo);
 router.post('/transcript', aiController.getYouTubeTranscript);
 router.post('/data', aiController.sendEmail);
 
-module.exports = router;
+export default router;

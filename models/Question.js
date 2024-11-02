@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from 'mongoose';
 
 const questionSchema = new mongoose.Schema({
   id: {
@@ -29,4 +29,4 @@ const questionSchema = new mongoose.Schema({
   correctAnswer: String,
 });
 
-module.exports = mongoose.model("Question", questionSchema);
+export default mongoose.model("Question", questionSchema);

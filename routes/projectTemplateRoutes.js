@@ -1,9 +1,10 @@
-const express = require('express');
+import express from 'express';
+import * as projectTemplateController from '../controllers/projectTemplateController.js';
+
 const router = express.Router();
-const projectTemplateController = require('../controllers/projectTemplateController');
 
 router.get('/getmainprojects', projectTemplateController.getMainProjects);
 router.post('/saveProject', projectTemplateController.saveProject);
 router.put('/updateproject', projectTemplateController.updateProject);
 
-module.exports = router;
+export default router;

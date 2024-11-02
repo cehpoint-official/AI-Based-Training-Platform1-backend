@@ -1,6 +1,7 @@
-const express = require('express');
+import express from 'express';
+import * as projectController from '../controllers/projectController.js';
+
 const router = express.Router();
-const projectController = require('../controllers/projectController');
 
 // Project routes
 router.get('/getprojectsAdmin', projectController.getProjectForAdmin);
@@ -12,5 +13,4 @@ router.post('/updateuserproject', projectController.updateUserProject);
 router.post('/project/approve', projectController.approveProject);
 router.post('/project/reject', projectController.rejectProject);
 
-
-module.exports = router;
+export default router;

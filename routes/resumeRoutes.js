@@ -1,10 +1,11 @@
-const express = require('express');
+import express from 'express';
+import * as resumeController from '../controllers/resumeController.js';
+
 const router = express.Router();
-const resumeController = require('../controllers/resumeController');
 
 router.post('/resume', resumeController.createResume);
 router.get('/resume/:uid', resumeController.getResume);
 router.post('/upload-resume', resumeController.uploadResume);
-router.get('/getallresumes', resumeController.getAllResumes); 
+router.get('/getallresumes', resumeController.getAllResumes);
 
-module.exports = router;
+export default router;

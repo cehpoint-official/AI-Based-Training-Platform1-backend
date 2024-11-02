@@ -1,6 +1,6 @@
-const Course = require('../models/Course');
-const nodemailer = require('nodemailer');
-const { createApi } = require("unsplash-js");
+import Course from '../models/Course.js';
+import nodemailer from 'nodemailer';
+import { createApi } from "unsplash-js";
 
 // Initialize Unsplash
 const unsplash = createApi({ 
@@ -19,7 +19,7 @@ const transporter = nodemailer.createTransport({
     },
 });
 
-exports.createCourse = async (req, res) => {
+export const createCourse = async (req, res) => {
     const { user, content, type, mainTopic } = req.body;
 
     try {
@@ -59,7 +59,7 @@ exports.createCourse = async (req, res) => {
     }
 };
 
-exports.updateCourse = async (req, res) => {
+export const updateCourse = async (req, res) => {
     const { content, courseId } = req.body;
     
     try {
@@ -75,7 +75,7 @@ exports.updateCourse = async (req, res) => {
     }
 };
 
-exports.finishCourse = async (req, res) => {
+export const finishCourse = async (req, res) => {
     const { courseId } = req.body;
     
     try {
@@ -97,7 +97,7 @@ exports.finishCourse = async (req, res) => {
     }
 };
 
-exports.sendCertificate = async (req, res) => {
+export const sendCertificate = async (req, res) => {
     const { html, email } = req.body;
 
     const mailOptions = {
@@ -116,7 +116,7 @@ exports.sendCertificate = async (req, res) => {
     }
 };
 
-exports.getCourses = async (req, res) => {
+export const getCourses = async (req, res) => {
     try {
         const { userId } = req.query;
         const courses = await Course.find({ user: userId });
@@ -127,7 +127,7 @@ exports.getCourses = async (req, res) => {
     }
 };
 
-exports.getAllCourses = async (req, res) => {
+export const getAllCourses = async (req, res) => {
     try {
         const courses = await Course.find({}, 'user content type mainTopic photo date end completed progress');
         res.json(courses);
@@ -137,7 +137,7 @@ exports.getAllCourses = async (req, res) => {
     }
 };
 
-exports.updateProgress = async (req, res) => {
+export const updateProgress = async (req, res) => {
     const { courseId, progress, completed } = req.body;
     
     try {

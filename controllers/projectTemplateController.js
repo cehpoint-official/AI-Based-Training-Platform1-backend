@@ -1,6 +1,6 @@
-const ProjectTemplate = require('../models/ProjectTemplate');
+import ProjectTemplate from '../models/ProjectTemplate.js';
 
-exports.getMainProjects = async (req, res) => {
+export const getMainProjects = async (req, res) => {
     try {
         const projects = await ProjectTemplate.find();
     
@@ -15,7 +15,7 @@ exports.getMainProjects = async (req, res) => {
       }
 };
 
-exports.saveProject = async (req, res) => {
+export const saveProject = async (req, res) => {
     try {
         const { title, category, description, difficulty, time } = req.body;
 
@@ -52,7 +52,7 @@ exports.saveProject = async (req, res) => {
     }
 };
 
-exports.updateProject = async (req, res) => {
+export const updateProject = async (req, res) => {
     try {
         const { projectTitle, userId, title } = req.body;
         console.log("Received data:", req.body);

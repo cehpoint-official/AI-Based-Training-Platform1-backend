@@ -1,9 +1,9 @@
-const { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } = require("@google/generative-ai");
-const gis = require("g-i-s");
-const youtubesearchapi = require("youtube-search-api");
-const { YoutubeTranscript } = require("youtube-transcript");
-const nodemailer = require("nodemailer");
-const showdown = require("showdown");
+import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
+import gis from "g-i-s";
+import youtubesearchapi from "youtube-search-api";
+import { YoutubeTranscript } from "youtube-transcript";
+import nodemailer from "nodemailer";
+import showdown from "showdown";
 
 // Initialize the Google Generative AI with the API key
 const genAI = new GoogleGenerativeAI(process.env.API_KEY);
@@ -28,7 +28,7 @@ const safetySettings = [
     },
 ];
 
-exports.handlePrompt = async (req, res) => {
+export const handlePrompt = async (req, res) => {
     const { prompt, useUserApiKey, userApiKey } = req.body;
 
     try {
@@ -49,7 +49,7 @@ exports.handlePrompt = async (req, res) => {
     }
 };
 
-exports.generateContent = async (req, res) => {
+export const generateContent = async (req, res) => {
     const { prompt, useUserApiKey, userApiKey } = req.body;
 
     try {
@@ -72,7 +72,7 @@ exports.generateContent = async (req, res) => {
     }
 };
 
-exports.handleChat = async (req, res) => {
+export const handleChat = async (req, res) => {
     const { prompt } = req.body;
 
     try {
@@ -92,7 +92,7 @@ exports.handleChat = async (req, res) => {
     }
 };
 
-exports.getProjectSuggestions = async (req, res) => {
+export const getProjectSuggestions = async (req, res) => {
     const { prompt } = req.body;
 
     try {
@@ -107,7 +107,7 @@ exports.getProjectSuggestions = async (req, res) => {
     }
 };
 
-exports.getImage = async (req, res) => {
+export const getImage = async (req, res) => {
     const { prompt } = req.body;
 
     try {
@@ -125,7 +125,7 @@ exports.getImage = async (req, res) => {
     }
 };
 
-exports.getYouTubeVideo = async (req, res) => {
+export const getYouTubeVideo = async (req, res) => {
     const { prompt } = req.body;
 
     try {
@@ -138,7 +138,7 @@ exports.getYouTubeVideo = async (req, res) => {
     }
 };
 
-exports.getYouTubeTranscript = async (req, res) => {
+export const getYouTubeTranscript = async (req, res) => {
     const { prompt } = req.body;
 
     try {
@@ -162,7 +162,7 @@ exports.getYouTubeTranscript = async (req, res) => {
     }
 };
 
-exports.sendEmail = async (req, res) => {
+export const sendEmail = async (req, res) => {
     const { html, to, subject } = req.body;
 
     const transporter = nodemailer.createTransport({

@@ -1,10 +1,12 @@
-const Question = require("../models/Question");
-const {
-  generateAdditionalQuestionsAI,
-} = require("../utils/aiQuestionGenerator");
+import Question from "../models/Question.js";
+import { generateAdditionalQuestionsAI } from "../utils/aiQuestionGenerator.js";
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-const fs = require('fs');
-const path = require('path');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const genericQuestions = JSON.parse(fs.readFileSync(path.join(__dirname, '../data/genericFallbackQuestions.json')));
 const skillSpecificQuestions = JSON.parse(fs.readFileSync(path.join(__dirname, '../data/skillSpecificQuestions.json')));
 const nonTechnicalQuestions = JSON.parse(fs.readFileSync(path.join(__dirname, '../data/nonTechnicalQuestions.json')));
@@ -16,7 +18,7 @@ function getRandomQuestions(questionsArray, count) {
     return shuffled.slice(0, count);
 }
 
-exports.fetchQuestions = async (req, res) => {
+export const fetchQuestions = async (req, res) => {
   // console.log("Received request body:", req.body);
   const { skills } = req.body;
 
