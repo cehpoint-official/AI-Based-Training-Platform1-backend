@@ -6,5 +6,6 @@ const router = express.Router();
 router.post('/testusers', testUserController.createTestUser);
 router.get('/testuser/getalltestuser', testUserController.getAllTestUsers);
 router.put('/updaterecordings', testUserController.updateRecordings);
+router.get('/testusers/check/:userId', testUserController.checkTestUserExists);
 
 export default router;

@@ -49,7 +49,7 @@ export const signin = async (req, res) => {
 };
 
 export const signup = async (req, res) => {
-  const { email, mName, password, type, uid } = req.body;
+  const { email, mName, password, type, uid, profile, apiKey } = req.body;
 
   try {
     const existingUser = await User.findOne({ email });
@@ -65,7 +65,8 @@ export const signup = async (req, res) => {
       password,
       type,
       uid,
-      profile: 'https://firebasestorage.googleapis.com/v0/b/ai-based-training-platfo-ca895.appspot.com/o/user.png?alt=media&[REDACTED:Generic API Key]' // Default profile image
+      profile,
+      apiKey,
     });
     await newUser.save();
     res.json({
@@ -79,7 +80,7 @@ export const signup = async (req, res) => {
 };
 
 export const googleAuth = async (req, res) => {
-  const { name, email, uid, googleProfileImage } = req.body;
+  const { name, email, uid, googleProfileImage, apiKey } = req.body;
   console.log("Google Auth Request:", req.body); // Debugging line
   try {
     const existingUser = await User.findOne({ email });
@@ -101,8 +102,9 @@ export const googleAuth = async (req, res) => {
     const newUser = new User({
       email,
       mName: name,
-      uid: uid,
+      uid,
       profile: googleProfileImage,
+      apiKey,
     });
     await newUser.save();
     res.json({

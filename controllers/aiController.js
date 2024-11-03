@@ -4,11 +4,14 @@ import youtubesearchapi from "youtube-search-api";
 import { YoutubeTranscript } from "youtube-transcript";
 import nodemailer from "nodemailer";
 import showdown from "showdown";
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 // Initialize the Google Generative AI with the API key
 const genAI = new GoogleGenerativeAI(process.env.API_KEY);
 
-// Define safety settings for content generation
+// Define safety settings
 const safetySettings = [
     {
         category: HarmCategory.HARM_CATEGORY_HARASSMENT,
@@ -29,23 +32,32 @@ const safetySettings = [
 ];
 
 export const handlePrompt = async (req, res) => {
+    // console.log('Received request body:', req.body); // Add logging
     const { prompt, useUserApiKey, userApiKey } = req.body;
 
     try {
         let model;
         if (useUserApiKey && userApiKey) {
+            console.log('Using user API key'); // Add logging
             const genAIuser = new GoogleGenerativeAI(userApiKey);
             model = genAIuser.getGenerativeModel({ model: "gemini-pro", safetySettings });
         } else {
+            console.log('Using default API key'); // Add logging
             model = genAI.getGenerativeModel({ model: "gemini-pro", safetySettings });
         }
 
+        console.log('Generating content for prompt:', prompt); // Add logging
         const result = await model.generateContent(prompt);
         const generatedText = result.response.text();
+        console.log('Generated response:', generatedText); // Add logging
         res.status(200).json({ generatedText });
     } catch (error) {
         console.error("Error in handlePrompt:", error);
-        res.status(500).json({ success: false, message: "Internal server error" });
+        res.status(500).json({ 
+            success: false, 
+            message: "Internal server error",
+            error: error.message // Include error message for debugging
+        });
     }
 };
 
