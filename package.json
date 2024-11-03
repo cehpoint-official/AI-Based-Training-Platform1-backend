@@ -1,6 +1,7 @@
 {
-  "name": "ai-based-training-platform1-backend",
+  "name": "ai-based-training-backend",
   "version": "1.0.0",
+  "type": "module",
   "main": "server.js",
   "type": "module",
   "scripts": {
