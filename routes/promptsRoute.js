@@ -8,8 +8,9 @@ const promptRouter = Router();
 
 promptRouter.post("/prompt", async (req, res) => {
   const receivedData = req.body;
-
   const promptString = receivedData.prompt;
+  const useUserApiKey = receivedData.useUserApiKey || false;
+  const userApiKey = receivedData.userApiKey || null;
 
   const safetySettings = [
     {
@@ -29,31 +30,47 @@ promptRouter.post("/prompt", async (req, res) => {
       threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
     },
   ];
+  let genAIuser;
+  if(useUserApiKey && userApiKey!==null){
+    genAIuser=new GoogleGenerativeAI(userApiKey);
+    const model=genAIuser.getGenerativeModel({
+      model:"gemini-pro",
+      safetySettings
+    })
+    const prompt = promptString;
 
-  const model = genAI.getGenerativeModel({
-    model: "gemini-pro",
-    safetySettings,
-  });
-
-  const prompt = promptString;
-
-  try {
-    const result = await model.generateContent(prompt);
-
-    const generatedText = result.response.text();
-    res.status(200).json({ generatedText });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    try {
+      const result = await model.generateContent(prompt);
+      const generatedText = result.response.text();
+      res.status(200).json({ generatedText });
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ success: false, message: "Internal server error" });
+    }
+  }
+  else{
+    const model = genAI.getGenerativeModel({
+      model: "gemini-pro",
+      safetySettings,
+    });
+    const prompt = promptString;
+    try {
+      const result = await model.generateContent(prompt);
+      const generatedText = result.response.text();
+      res.status(200).json({ generatedText });
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ success: false, message: "Internal server error" });
+    }
   }
 });
 
 //GET GENERATE THEORY
 promptRouter.post("/generate", async (req, res) => {
   const receivedData = req.body;
-
   const promptString = receivedData.prompt;
-
+  const useUserApiKey = receivedData.useUserApiKey || false;
+  const userApiKey = receivedData.userApiKey || null;
   const safetySettings = [
     {
       category: HarmCategory.HARM_CATEGORY_HARASSMENT,
@@ -72,29 +89,53 @@ promptRouter.post("/generate", async (req, res) => {
       threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
     },
   ];
-
-  const model = genAI.getGenerativeModel({
-    model: "gemini-pro",
-    safetySettings,
-  });
-
-  const prompt = promptString;
-
-  await model
-    .generateContent(prompt)
-    .then((result) => {
-      const response = result.response;
-      const txt = response.text();
-      const converter = new showdown.Converter();
-      const markdownText = txt;
-      const text = converter.makeHtml(markdownText);
-      res.status(200).json({ text });
+  let genAIuser;
+  if(useUserApiKey && userApiKey!==null){
+    genAIuser=new GoogleGenerativeAI(userApiKey);
+    const model=genAIuser.getGenerativeModel({
+      model:"gemini-pro",
+      safetySettings
     })
-    .catch((error) => {
-      res
-        .status(500)
-        .json({ success: false, message: "Internal server error" });
+    const prompt = promptString;
+
+    try {
+      await model
+        .generateContent(prompt)
+        .then((result) => {
+          const response = result.response;
+          const txt = response.text();
+          const converter = new showdown.Converter();
+          const markdownText = txt;
+          const text = converter.makeHtml(markdownText);
+          res.status(200).json({ text });
+        })
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ success: false, message: "Internal server error" });
+    }
+  }
+  else{
+    const model = genAI.getGenerativeModel({
+      model: "gemini-pro",
+      safetySettings,
     });
+    try {
+      const prompt = promptString;
+      await model
+        .generateContent(prompt)
+        .then((result) => {
+          const response = result.response;
+          const txt = response.text();
+          const converter = new showdown.Converter();
+          const markdownText = txt;
+          const text = converter.makeHtml(markdownText);
+          res.status(200).json({ text });
+        })
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ success: false, message: "Internal server error" });
+    }
+  }
 });
 
 //CHAT

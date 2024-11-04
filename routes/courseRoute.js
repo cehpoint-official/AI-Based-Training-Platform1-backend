@@ -7,25 +7,51 @@ const courseRouter = Router();
 //STORE COURSE
 courseRouter.post("/course", async (req, res) => {
   const { user, content, type, mainTopic } = req.body;
-
-  try {
-    const result = await unsplash.search.getPhotos({
-      query: mainTopic,
-      page: 1,
-      perPage: 1,
-      orientation: "landscape",
-    });
-    const photos = result.response?.results;
-    const photo = photos[0]?.urls?.regular;
-    const newCourse = new Course({ user, content, type, mainTopic, photo });
-    await newCourse.save();
-    res.json({
-      success: true,
-      message: "Course created successfully",
-      courseId: newCourse._id,
-    });
-  } catch (error) {
-    console.log(error);
+  const receivedData = req.body;
+  const useUserApiKey = receivedData.useUserApiKey || false;
+  const userunsplashkey = receivedData.userunsplashkey || null;
+  if(useUserApiKey){
+    const unsplash2 = createApi({ accessKey: userunsplashkey});
+    try {
+      const result = await unsplash2.search.getPhotos({
+        query: mainTopic,
+        page: 1,
+        perPage: 1,
+        orientation: "landscape",
+      });
+      const photos = result.response?.results;
+      const photo = photos[0]?.urls?.regular;
+      const newCourse = new Course({ user, content, type, mainTopic, photo });
+      await newCourse.save();
+      res.json({
+        success: true,
+        message: "Course created successfully",
+        courseId: newCourse._id,
+      });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Internal server error" });
+    }
+  }
+  else{
+    try {
+      const result = await unsplash.search.getPhotos({
+        query: mainTopic,
+        page: 1,
+        perPage: 1,
+        orientation: "landscape",
+      });
+      const photos = result.response?.results;
+      const photo = photos[0]?.urls?.regular;
+      const newCourse = new Course({ user, content, type, mainTopic, photo });
+      await newCourse.save();
+      res.json({
+        success: true,
+        message: "Course created successfully",
+        courseId: newCourse._id,
+      });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Internal server error" });
+    }
   }
 });
 
