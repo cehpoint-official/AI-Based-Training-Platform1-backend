@@ -1,69 +1,40 @@
-import fetch from 'node-fetch';
-
 export const generateAdditionalQuestionsAI = async (skills, limit) => {
-    console.log(`Generating ${limit} AI questions for skills:`, skills);
-    
-    const url = process.env.CHATGPT_API_URL;
+  const genAI = new GoogleGenerativeAI(import.meta.env.VITE_API_KEY);
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const prompt = `Here are skills: ${skills}.Generate exatly ${limit} hardest technical questions.In the format Ques: *** question generated ***`;
 
-    const options = {
-        method: 'POST',
-        headers: {
-            'x-rapidapi-key': process.env.RAPIDAPI_KEY,
-            'x-rapidapi-host': process.env.RAPIDAPI_HOST,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            messages: [
-                {
-                    role: "system",
-                    content: "Generate the hardest technical interview questions."
-                },
-                {
-                    role: "user",
-                    content: `Here are skills: ${skills.join(', ')}. Generate ${limit} hardest questions, and avoid corporate topics.`
-                }
-            ],
-            model: 'gpt-3.5-turbo',
-            max_tokens: 900,
-            temperature: 0.9,
-        }),
-    };
+  try {
+    const result = await model.generateContent(prompt);
+    console.log("Full AI Response:", result); // Log the entire response
 
-    try {
-        const response = await fetch(url, options);
+    // Ensure result has candidates and access the response text
+    const responseText = result.response.text() || '';
+    console.log("AI Response Text: ", responseText);
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
+    // Use regex to extract questions based on the expected format
+    const questionsArray = responseText
+      .split('\n') // Split the response text by new lines
+      .filter(line => line.startsWith('**Ques:')) // Filter lines that start with '**Ques:'
+      .map((line, index) => {
+        // Remove '**Ques: ' prefix and clean up the question
+        const question = line.replace(/^\*\*Ques:\s*/, '').trim();
 
-        const result = await response.json();
-        console.log("AI Response: ", result);
+        return {
+          id: `generated_${index + 1}`,
+          question: question, // Clean question text
+          userAnswer: '',
+          userTextAnswer: '',
+          type: 'text',
+          skills: "additional",
+          isCorrect: null,
+        };
+      })
+      .slice(0, limit); // Limit the number of questions extracted
 
-        const rawText = result.choices[0].message.content;
-
-        const unwantedPhrases = [
-            "Here are five challenging technical questions based on the skills you mentioned:",
-            "Sure! Here are five challenging technical questions based on the listed skills:",
-        ];
-        
-        const questionsArray = rawText
-            .split(/\n\d+\.\s+/)
-            .filter(q => q.trim() !== '' && !unwantedPhrases.some(phrase => q.includes(phrase)))
-            .slice(1, limit + 1)
-            .map((q, index) => ({
-                id: `generated_${index + 1}`,
-                question: q.trim(),
-                userAnswer: '',
-                userTextAnswer: '',
-                type: 'text',
-                skills: skills,
-                isCorrect: null,
-            }));
-
-        console.log("Processed AI questions:", questionsArray);
-        return questionsArray;
-    } catch (error) {
-        console.error("Error in AI question generation:", error);
-        throw error;
-    }
+    console.log("Extracted questions:", questionsArray);
+    return questionsArray;
+  } catch (error) {
+    console.error("Error generating questions with AI: ", error);
+    return []; // Return an empty array on error
+  }
 };
