@@ -19,6 +19,8 @@ import resumeRoutes from './routes/resumeRoutes.js';
 import testReportRoutes from './routes/testReportRoutes.js';
 import testUserRoutes from './routes/testUserRoutes.js';
 import projectTemplateRoutes from './routes/projectTemplateRoutes.js';
+import quizRoutes from './routes/quizRoutes.js';
+import topcandidateRoutes from './routes/topCandidateRoutes.js';
 
 // Import database connection
 import connectDB from './config/db.js';
@@ -87,8 +89,10 @@ app.set('unsplash', unsplash);
  * app.use('/api/projects', projectRoutes);
  * app.use('/api/ai', aiRoutes);
  * app.use('/api/dashboard', dashboardRoutes);
- * app.use('/questions', questionRoutes);
- * app.use('/resumes', resumeRoutes);
+ * app.use('api/questions', questionRoutes);
+ * app.use('api/resumes', resumeRoutes);
+ * app.use('api/quiz', quizRoutes);
+ * app.use('/api/topcandidate', quizRoutes);
  * 
  * Current implementation uses simplified routes ('/api') instead of standard MVC structure
  * ('/api/resource') because:
@@ -110,6 +114,8 @@ app.use('/', questionRoutes);
 app.use('/', resumeRoutes);
 app.use('/', testReportRoutes);
 app.use('/api', testUserRoutes);
+app.use('/api/quiz', quizRoutes);
+app.use('/api', topcandidateRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
