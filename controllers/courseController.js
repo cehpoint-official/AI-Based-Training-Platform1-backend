@@ -23,24 +23,40 @@ export const createCourse = async (req, res) => {
     const { user, content, type, mainTopic } = req.body;
 
     try {
-        // Get relevant image from Unsplash
-        const result = await unsplash.search.getPhotos({
-            query: mainTopic,
-            page: 1,
-            perPage: 1,
-            orientation: "landscape",
-        });
-        
-        const photos = result.response?.results;
-        const photo = photos[0]?.urls?.regular;
+        let photo = null;
 
-        // Create new course
+        // Validate required fields
+        if (!user || !content || !type || !mainTopic) {
+            return res.status(400).json({
+                success: false,
+                message: "Missing required fields"
+            });
+        }
+
+        // Try to get image from Unsplash
+        try {
+            const result = await unsplash.search.getPhotos({
+                query: mainTopic,
+                page: 1,
+                perPage: 1,
+                orientation: "landscape",
+            });
+
+            if (result?.response?.results?.length > 0) {
+                photo = result.response.results[0]?.urls?.regular;
+            }
+        } catch (unsplashError) {
+            console.error('Unsplash API Error:', unsplashError);
+            // Continue without image if Unsplash fails
+        }
+
+        // Create new course (with or without photo)
         const newCourse = new Course({ 
             user, 
             content, 
             type, 
             mainTopic, 
-            photo,
+            photo, // This will be null if Unsplash request failed
             progress: 0,
             completed: false,
             date: Date.now()
@@ -50,12 +66,17 @@ export const createCourse = async (req, res) => {
         
         res.json({
             success: true,
-            message: "Course created successfully",
+            message: photo ? "Course created successfully" : "Course created successfully (without image)",
             courseId: newCourse._id,
         });
+
     } catch (error) {
         console.error('Error creating course:', error);
-        res.status(500).json({ success: false, message: "Internal server error" });
+        res.status(500).json({ 
+            success: false, 
+            message: "Internal server error",
+            error: error.message
+        });
     }
 };
 

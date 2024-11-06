@@ -5,6 +5,7 @@ const courseSchema = new mongoose.Schema({
   content: { type: String, required: true },
   type: String,
   mainTopic: String,
+  subTopic: String,
   photo: String,
   date: { type: Date, default: Date.now },
   end: { type: Date, default: Date.now },

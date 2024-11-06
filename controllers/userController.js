@@ -118,7 +118,6 @@ export const googleAuth = async (req, res) => {
 };
 
 
-
 export const forgotPassword = async (req, res) => {
   const { email, name, company, logo } = req.body;
 
