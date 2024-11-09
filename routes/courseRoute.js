@@ -6,7 +6,7 @@ const courseRouter = Router();
 
 //STORE COURSE
 courseRouter.post("/course", async (req, res) => {
-  const { user, content, type, mainTopic } = req.body;
+  const { user, content, type, mainTopic,subTopic } = req.body;
   const receivedData = req.body;
   const useUserApiKey = receivedData.useUserApiKey || false;
   const userunsplashkey = receivedData.userunsplashkey || null;
@@ -21,7 +21,7 @@ courseRouter.post("/course", async (req, res) => {
       });
       const photos = result.response?.results;
       const photo = photos[0]?.urls?.regular;
-      const newCourse = new Course({ user, content, type, mainTopic, photo });
+      const newCourse = new Course({ user, content, type, mainTopic, photo,subTopic });
       await newCourse.save();
       res.json({
         success: true,
