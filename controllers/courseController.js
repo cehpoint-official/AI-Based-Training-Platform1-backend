@@ -22,6 +22,11 @@ const transporter = nodemailer.createTransport({
 export const createCourse = async (req, res) => {
     const { user, content, type, mainTopic } = req.body;
 
+    if (!user || !content || !type || !mainTopic) {
+        return res.status(400).json({ success: false, message: "Missing required fields" });
+    }
+
+    let photo = "default_image_url"; // Set a fallback URL in case the Unsplash API call fails or returns no photos
     try {
         // Get relevant image from Unsplash
         const result = await unsplash.search.getPhotos({
@@ -30,24 +35,30 @@ export const createCourse = async (req, res) => {
             perPage: 1,
             orientation: "landscape",
         });
-        
-        const photos = result.response?.results;
-        const photo = photos[0]?.urls?.regular;
 
+        const photos = result?.response?.results;
+        if (photos && photos.length > 0) {
+            photo = photos[0].urls?.regular || photo; // Use fetched image or fallback
+        }
+    } catch (error) {
+        console.error('Error fetching image from Unsplash:', error);
+    }
+
+    try {
         // Create new course
-        const newCourse = new Course({ 
-            user, 
-            content, 
-            type, 
-            mainTopic, 
+        const newCourse = new Course({
+            user,
+            content,
+            type,
+            mainTopic,
             photo,
             progress: 0,
             completed: false,
-            date: Date.now()
+            date: Date.now(),
         });
 
         await newCourse.save();
-        
+
         res.json({
             success: true,
             message: "Course created successfully",
