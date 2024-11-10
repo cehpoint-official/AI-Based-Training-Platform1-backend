@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
 import gis from "g-i-s";
+import { createApi } from "unsplash-js";
 import youtubesearchapi from "youtube-search-api";
 import { YoutubeTranscript } from "youtube-transcript";
 import nodemailer from "nodemailer";
@@ -10,6 +11,10 @@ dotenv.config();
 
 // Initialize the Google Generative AI with the API key
 const genAI = new GoogleGenerativeAI(process.env.API_KEY);
+// Initialize Unsplash
+const unsplash = createApi({ 
+    accessKey: process.env.UNSPLASH_ACCESS_KEY 
+});
 
 // Define safety settings
 const safetySettings = [
@@ -32,7 +37,7 @@ const safetySettings = [
 ];
 
 export const handlePrompt = async (req, res) => {
-    // console.log('Received request body:', req.body); // Add logging
+    //console.log('Received request body:', req.body); // Add logging
     const { prompt, useUserApiKey, userApiKey } = req.body;
 
     try {
@@ -138,19 +143,47 @@ export const getImage = async (req, res) => {
     const { prompt } = req.body;
 
     try {
-        gis(prompt, (error, results) => {
-            if (error || !results || results.length === 0) {
+        // First attempt to get image from GIS
+        const results = await new Promise((resolve, reject) => {
+            gis(prompt, (error, results) => {
+                if (error || !results || results.length === 0) {
+                    reject("No results from GIS");
+                } else {
+                    resolve(results);
+                }
+            });
+        });
+
+        // If GIS returns results, send them
+        res.status(200).json({ url: results[0].url });
+    } catch (gisError) {
+        console.log("Error with GIS:", gisError);
+
+        // If GIS fails, fall back to Unsplash API
+        try {
+            const unsplashResponse = await unsplash.search.getPhotos({
+                query: prompt,
+                page: 1,
+                perPage: 1,
+                orientation: "landscape",
+            });
+
+            if (unsplashResponse.response.results.length > 0) {
+                res.status(200).json({ url: unsplashResponse.response.results[0].urls.regular });
+            } else {
+                // If Unsplash returns no results, send a placeholder image
                 const defaultImageUrl = "https://via.placeholder.com/150";
                 res.status(200).json({ url: defaultImageUrl });
-            } else {
-                res.status(200).json({ url: results[0].url });
             }
-        });
-    } catch (error) {
-        console.error("Error in getImage:", error);
-        res.status(500).json({ success: false, message: "Internal server error" });
+        } catch (unsplashError) {
+            console.error("Error with Unsplash:", unsplashError);
+            // If both GIS and Unsplash fail, send a placeholder image
+            const defaultImageUrl = "https://via.placeholder.com/150";
+            res.status(200).json({ url: defaultImageUrl });
+        }
     }
 };
+
 
 export const getYouTubeVideo = async (req, res) => {
     const { prompt } = req.body;

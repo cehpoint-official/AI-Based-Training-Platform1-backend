@@ -49,7 +49,7 @@ export const signin = async (req, res) => {
 };
 
 export const signup = async (req, res) => {
-  const { email, mName, password, type, uid, profile, apiKey } = req.body;
+  const { email, mName, password, type, uid, profile, apiKey,unsplashApiKey } = req.body;
 
   try {
     const existingUser = await User.findOne({ email });
@@ -67,6 +67,9 @@ export const signup = async (req, res) => {
       uid,
       profile,
       apiKey,
+      unsplashApiKey,
+      userapikey1:null,
+      userapikey2:null
     });
     await newUser.save();
     res.json({
@@ -211,10 +214,10 @@ export const updateProfile = async (req, res) => {
       updateData.password = password;
     }
     if (apiKey) {
-      updateData.apiKey = apiKey;
+      updateData.userapikey1 = apiKey;
     }
     await User.findOneAndUpdate(
-      { _id: uid },
+      { uid: uid },
       { $set: updateData }
     );
     res.json({ success: true, message: "Profile Updated" });

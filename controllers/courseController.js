@@ -22,48 +22,45 @@ const transporter = nodemailer.createTransport({
 export const createCourse = async (req, res) => {
     const { user, content, type, mainTopic } = req.body;
 
+    if (!user || !content || !type || !mainTopic) {
+        return res.status(400).json({ success: false, message: "Missing required fields" });
+    }
+
+    let photo = "default_image_url"; // Set a fallback URL in case the Unsplash API call fails or returns no photos
     try {
-        let photo = null;
 
-        // Validate required fields
-        if (!user || !content || !type || !mainTopic) {
-            return res.status(400).json({
-                success: false,
-                message: "Missing required fields"
-            });
+        // Get relevant image from Unsplash
+        const result = await unsplash.search.getPhotos({
+            query: mainTopic,
+            page: 1,
+            perPage: 1,
+            orientation: "landscape",
+        });
+
+        const photos = result?.response?.results;
+        if (photos && photos.length > 0) {
+            photo = photos[0].urls?.regular || photo; // Use fetched image or fallback
         }
+    } catch (error) {
+        console.error('Error fetching image from Unsplash:', error);
+    }
 
-        // Try to get image from Unsplash
-        try {
-            const result = await unsplash.search.getPhotos({
-                query: mainTopic,
-                page: 1,
-                perPage: 1,
-                orientation: "landscape",
-            });
+    try {
+        // Create new course
+        const newCourse = new Course({
+            user,
+            content,
+            type,
+            mainTopic,
+            photo,
 
-            if (result?.response?.results?.length > 0) {
-                photo = result.response.results[0]?.urls?.regular;
-            }
-        } catch (unsplashError) {
-            console.error('Unsplash API Error:', unsplashError);
-            // Continue without image if Unsplash fails
-        }
-
-        // Create new course (with or without photo)
-        const newCourse = new Course({ 
-            user, 
-            content, 
-            type, 
-            mainTopic, 
-            photo, // This will be null if Unsplash request failed
             progress: 0,
             completed: false,
-            date: Date.now()
+            date: Date.now(),
         });
 
         await newCourse.save();
-        
+
         res.json({
             success: true,
             message: photo ? "Course created successfully" : "Course created successfully (without image)",
