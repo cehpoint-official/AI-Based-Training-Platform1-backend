@@ -6,7 +6,9 @@ const courseRouter = Router();
 
 //STORE COURSE
 courseRouter.post("/course", async (req, res) => {
+
   const { user, content, type, mainTopic,subTopic } = req.body;
+
   const receivedData = req.body;
   const useUserApiKey = receivedData.useUserApiKey || false;
   const userunsplashkey = receivedData.userunsplashkey || null;
@@ -14,7 +16,7 @@ courseRouter.post("/course", async (req, res) => {
     const unsplash2 = createApi({ accessKey: userunsplashkey});
     try {
       const result = await unsplash2.search.getPhotos({
-        query: mainTopic,
+        query: `${mainTopic} ${subTopic}`,
         page: 1,
         perPage: 1,
         orientation: "landscape",
@@ -35,7 +37,7 @@ courseRouter.post("/course", async (req, res) => {
   else{
     try {
       const result = await unsplash.search.getPhotos({
-        query: mainTopic,
+        query: `${mainTopic} ${subTopic}`,
         page: 1,
         perPage: 1,
         orientation: "landscape",

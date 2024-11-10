@@ -58,11 +58,26 @@ export const handlePrompt = async (req, res) => {
         res.status(200).json({ generatedText });
     } catch (error) {
         console.error("Error in handlePrompt:", error);
-        res.status(500).json({ 
-            success: false, 
-            message: "Internal server error",
-            error: error.message // Include error message for debugging
-        });
+        
+        if (error.message.includes('API_KEY_INVALID')) {
+            res.status(400).json({
+                success: false,
+                message: "Invalid API key",
+                error: "The provided API key is invalid or has expired. Please check your API key and try again."
+            });
+        } else if (error.message.includes('PERMISSION_DENIED')) {
+            res.status(403).json({
+                success: false,
+                message: "Permission denied",
+                error: "The API key doesn't have permission to access this resource. Please check your API key permissions."
+            });
+        } else {
+            res.status(500).json({ 
+                success: false, 
+                message: "Internal server error",
+                error: error.message
+            });
+        }
     }
 };
 

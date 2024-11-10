@@ -28,6 +28,7 @@ export const createCourse = async (req, res) => {
 
     let photo = "default_image_url"; // Set a fallback URL in case the Unsplash API call fails or returns no photos
     try {
+
         // Get relevant image from Unsplash
         const result = await unsplash.search.getPhotos({
             query: mainTopic,
@@ -52,6 +53,7 @@ export const createCourse = async (req, res) => {
             type,
             mainTopic,
             photo,
+
             progress: 0,
             completed: false,
             date: Date.now(),
@@ -61,12 +63,17 @@ export const createCourse = async (req, res) => {
 
         res.json({
             success: true,
-            message: "Course created successfully",
+            message: photo ? "Course created successfully" : "Course created successfully (without image)",
             courseId: newCourse._id,
         });
+
     } catch (error) {
         console.error('Error creating course:', error);
-        res.status(500).json({ success: false, message: "Internal server error" });
+        res.status(500).json({ 
+            success: false, 
+            message: "Internal server error",
+            error: error.message
+        });
     }
 };
 
