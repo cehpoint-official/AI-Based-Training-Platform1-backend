@@ -17,6 +17,9 @@ const userSchema = new mongoose.Schema({
   resetPasswordToken: { type: String, default: null },
   resetPasswordExpires: { type: Date, default: null },
   apiKey: { type: String, default: null },
+  unsplashApiKey:{type:String,default:null},
+  userapikey1:{ type: String, default: null },
+  userapikey2:{ type: String, default: null },
 });
 
 export default mongoose.model("User", userSchema);

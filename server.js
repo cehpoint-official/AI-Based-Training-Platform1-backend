@@ -21,6 +21,7 @@ import testUserRoutes from './routes/testUserRoutes.js';
 import projectTemplateRoutes from './routes/projectTemplateRoutes.js';
 import quizRoutes from './routes/quizRoutes.js';
 import topcandidateRoutes from './routes/topCandidateRoutes.js';
+import * as functions from 'firebase-functions';
 
 // Import database connection
 import connectDB from './config/db.js';
@@ -118,20 +119,19 @@ app.use('/api/quiz', quizRoutes);
 app.use('/api', topcandidateRoutes);
 
 // Error handling middleware
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).send('Something broke!');
-});
+// app.use((err, req, res, next) => {
+//   console.error(err.stack);
+//   res.status(500).send('Something broke!');
+// });
 
 const PORT = process.env.PORT || 5000;
 
+// For local development
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+  });
+}
 
-
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
-
-
-export default app;
-
-
+// Export the app wrapped in a Firebase function
+export const api = functions.https.onRequest(app);
