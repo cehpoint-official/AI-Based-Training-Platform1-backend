@@ -29,4 +29,4 @@ const questionSchema = new mongoose.Schema({
   correctAnswer: String,
 });
 
-export default mongoose.model("Question", questionSchema);
+export default mongoose.model("questions", questionSchema);

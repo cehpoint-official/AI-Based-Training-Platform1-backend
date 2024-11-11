@@ -127,11 +127,9 @@ app.use('/api', topcandidateRoutes);
 const PORT = process.env.PORT || 5000;
 
 // For local development
-if (process.env.NODE_ENV !== 'production') {
-  app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-  });
-}
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
 
 // Export the app wrapped in a Firebase function
 export const api = functions.https.onRequest(app);
