@@ -1,9 +1,10 @@
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import dotenv from 'dotenv';
+dotenv.config();
 
-
-export const generateAdditionalQuestionsAI = async (skills, limit) => {
-  const genAI = new GoogleGenerativeAI(import.meta.env.VITE_API_KEY);
+export const generateAdditionalQuestionsAI = async (skills, limit=5) => {
+  const genAI = new GoogleGenerativeAI(process.VITE_API_KEY);
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
   const prompt = `Here are skills: ${skills}.Generate exatly ${limit} hardest technical questions.In the format Ques: *** question generated ***`;
 
