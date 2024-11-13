@@ -55,7 +55,7 @@ export const saveProject = async (req, res) => {
 export const updateProject = async (req, res) => {
     try {
         const { projectTitle, userId, title } = req.body;
-        console.log("Received data:", req.body);
+        // console.log("Received data:", req.body);
 
         // Create the object to be added to the assignedTo array
         const assignedObject = { userid: userId, title: title };

@@ -84,7 +84,7 @@ export const signup = async (req, res) => {
 
 export const googleAuth = async (req, res) => {
   const { name, email, uid, googleProfileImage, apiKey } = req.body;
-  console.log("Google Auth Request:", req.body); // Debugging line
+  // console.log("Google Auth Request:", req.body); // Debugging line
   try {
     const existingUser = await User.findOne({ email });
     if (existingUser) {

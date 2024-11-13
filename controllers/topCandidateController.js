@@ -108,7 +108,7 @@ export const getTopCandidate_admin = async (req, res) => {
       },
     ]);
 
-    console.log(usersWithDetails); // Debugging output to check results
+    // console.log(usersWithDetails); // Debugging output to check results
 
     res.status(200).json({ success: true, data: usersWithDetails });
   } catch (error) {
