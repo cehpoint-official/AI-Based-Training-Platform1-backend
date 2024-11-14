@@ -35,7 +35,7 @@ export const fetchQuestions = async (req, res) => {
       .filter((skill) => skill && typeof skill === "string" && skill.length > 0)
       .map((skill) => skill.toLowerCase());
 
-    console.log("Cleaned skills array:", cleanedSkills);
+    // console.log("Cleaned skills array:", cleanedSkills);
 
     let allQuestions = [];
 
@@ -45,7 +45,7 @@ export const fetchQuestions = async (req, res) => {
         skills: { $in: cleanedSkills },
       }).limit(10);
 
-      console.log(`Found ${dbQuestions.length} questions in database`);
+      // console.log(`Found ${dbQuestions.length} questions in database`);
       allQuestions.push(...dbQuestions);
     } catch (dbError) {
       console.error("Database query error:", dbError);

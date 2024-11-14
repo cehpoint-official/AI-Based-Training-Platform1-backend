@@ -43,18 +43,18 @@ export const handlePrompt = async (req, res) => {
     try {
         let model;
         if (useUserApiKey && userApiKey) {
-            console.log('Using user API key'); // Add logging
+            // console.log('Using user API key'); // Add logging
             const genAIuser = new GoogleGenerativeAI(userApiKey);
             model = genAIuser.getGenerativeModel({ model: "gemini-pro", safetySettings });
         } else {
-            console.log('Using default API key'); // Add logging
+            // console.log('Using default API key'); // Add logging
             model = genAI.getGenerativeModel({ model: "gemini-pro", safetySettings });
         }
 
-        console.log('Generating content for prompt:', prompt); // Add logging
+        // console.log('Generating content for prompt:', prompt); // Add logging
         const result = await model.generateContent(prompt);
         const generatedText = result.response.text();
-        console.log('Generated response:', generatedText); // Add logging
+        // console.log('Generated response:', generatedText); // Add logging
         res.status(200).json({ generatedText });
     } catch (error) {
         console.error("Error in handlePrompt:", error);
@@ -157,7 +157,7 @@ export const getImage = async (req, res) => {
         // If GIS returns results, send them
         res.status(200).json({ url: results[0].url });
     } catch (gisError) {
-        console.log("Error with GIS:", gisError);
+        // console.log("Error with GIS:", gisError);
 
         // If GIS fails, fall back to Unsplash API
         try {
