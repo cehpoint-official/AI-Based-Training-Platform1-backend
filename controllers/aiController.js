@@ -99,8 +99,8 @@ export const generateContent = async (req, res) => {
         const htmlContent = converter.makeHtml(generatedText);
         res.status(200).json({ text: htmlContent });
     } catch (error) {
-        console.error("Error in generateContent:", error);
-        res.status(500).json({ success: false, message: "Internal server error" });
+        // console.error("Error in generateContent:", error);
+        res.status(500).json({ success: false, message: "Error in generating" });
     }
 };
 
