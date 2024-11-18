@@ -99,7 +99,7 @@ export const generateContent = async (req, res) => {
         const htmlContent = converter.makeHtml(generatedText);
         res.status(200).json({ text: htmlContent });
     } catch (error) {
-        // console.error("Error in generateContent:", error);
+        console.error("Error in generateContent:", error);
         res.status(500).json({ success: false, message: "Internal server error" });
     }
 };
@@ -251,3 +251,36 @@ export const sendEmail = async (req, res) => {
         res.status(400).json(error);
     }
 };
+
+export const aiGeneratedExplanation = async (req, res) => {
+    const { prompt, useUserApiKey, apiKey } = req.body;
+  
+    try {
+      // Initialize AI model based on user-provided API key or default server key
+      let model;
+      if (useUserApiKey && apiKey) {
+        const genAIuser = new GoogleGenerativeAI(apiKey); // Initialize with user's API key
+        model = genAIuser.getGenerativeModel({ model: "gemini-pro", safetySettings });
+      } else {
+        model = genAI.getGenerativeModel({ model: "gemini-pro", safetySettings }); // Default server model
+      }
+  
+      // Generate the explanation based on the prompt
+      const result = await model.generateContent(prompt);
+      const generatedExplanation = result.response.text();
+  
+      // Convert Markdown to HTML using Showdown
+      const converter = new showdown.Converter();
+      const htmlExplanation = converter.makeHtml(generatedExplanation);
+  
+      // Respond with the AI-generated explanation in HTML
+      res.status(200).json({ success: true, explanation: htmlExplanation });
+    } catch (error) {
+      console.error("Error in aiGeneratedExplanation:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to generate explanation. Please try again.",
+        error: error.message,
+      });
+    }
+  };
