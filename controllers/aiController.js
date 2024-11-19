@@ -198,29 +198,29 @@ export const getYouTubeVideo = async (req, res) => {
     }
 };
 
-export const getYouTubeTranscript = async (req, res) => {
-    const { prompt } = req.body;
+// export const getYouTubeTranscript = async (req, res) => {
+//     const { prompt } = req.body;
 
-    try {
-        const transcript = await YoutubeTranscript.fetchTranscript(prompt);
-        if (!transcript || transcript.length === 0) {
-            return res.status(404).json({
-                success: false,
-                message: "Transcript is disabled or not available for this video.",
-            });
-        }
-        res.status(200).json({ url: transcript });
-    } catch (error) {
-        if (error.message.includes("Transcript is disabled")) {
-            return res.status(403).json({
-                success: false,
-                message: "Transcript is disabled on this video.",
-            });
-        }
-        console.error("Error in getYouTubeTranscript:", error);
-        res.status(500).json({ success: false, message: "Internal server error" });
-    }
-};
+//     try {
+//         const transcript = await YoutubeTranscript.fetchTranscript(prompt);
+//         if (!transcript || transcript.length === 0) {
+//             return res.status(404).json({
+//                 success: false,
+//                 message: "Transcript is disabled or not available for this video.",
+//             });
+//         }
+//         res.status(200).json({ url: transcript });
+//     } catch (error) {
+//         if (error.message.includes("Transcript is disabled")) {
+//             return res.status(403).json({
+//                 success: false,
+//                 message: "Transcript is disabled on this video.",
+//             });
+//         }
+//         console.error("Error in getYouTubeTranscript:", error);
+//         res.status(500).json({ success: false, message: "Error generating transcript" });
+//     }
+// };
 
 export const sendEmail = async (req, res) => {
     const { html, to, subject } = req.body;
@@ -284,3 +284,39 @@ export const aiGeneratedExplanation = async (req, res) => {
       });
     }
   };
+
+
+
+const fetchWithRetries = async (prompt, retries = 3, delay = 1000) => {
+    while (retries > 0) {
+        try {
+            return await YoutubeTranscript.fetchTranscript(prompt);
+        } catch (error) {
+            console.warn(`Retrying... (${3 - retries + 1})`);
+            if (retries === 1) throw error; // Rethrow on last attempt
+            await new Promise((resolve) => setTimeout(resolve, delay));
+        }
+        retries--;
+    }
+};
+
+export const getYouTubeTranscript = async (req, res) => {
+    const { prompt } = req.body;
+
+    if (!prompt || typeof prompt !== "string") {
+        return res.status(400).json({ success: false, message: "Invalid request." });
+    }
+
+    try {
+        const transcript = await fetchWithRetries(prompt);
+        if (!transcript || transcript.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Transcript is not available.",
+            });
+        }
+        res.status(200).json({ url: transcript });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Error fetching transcript." });
+    }
+};
