@@ -1,7 +1,10 @@
 import User from '../models/User.js'; 
+import UserOTPVerification from '../models/UserOTPVerification.js';
 import crypto from 'crypto';
 import nodemailer from 'nodemailer';
-
+import bcrypt from 'bcrypt';
+import dotenv from 'dotenv';
+dotenv.config();
 // Configure your nodemailer transporter here
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
@@ -69,18 +72,64 @@ export const signup = async (req, res) => {
       apiKey,
       unsplashApiKey,
       userapikey1:null,
-      userapikey2:null
+      userapikey2:null,
+      verified:false
     });
-    await newUser.save();
-    res.json({
-      success: true,
-      message: "Account created successfully",
-      userId: newUser._id,
+    await newUser.save().then((result)=>{
+      //handle verification
+      sendOTPVerificationEmail(result,res);
     });
+    // res.json({
+    //   success: true,
+    //   message: "Account created successfully",
+    //   userId: newUser._id,
+    // });
   } catch (error) {
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
+
+export const verify=async (req,res)=>{
+  try{
+    const {userid,otp}=req.body;
+    if(!userid || !otp){
+      throw Error("empty details");
+    }else{
+      const  records=await UserOTPVerification.find({uid:userid});
+      if(records.length<=0){
+        throw new Error("account is invalid or has already been verified");
+      }else{
+        const{expiresAt} =records[0];
+        if(expiresAt<Date.now()){
+          await UserOTPVerification.deleteMany({uid:userid});
+          throw new Error("code has expired")
+        }else{
+          const storedOTP = records[0].otp;
+          const valid= String(otp).trim() === String(storedOTP).trim();
+          if(!valid){
+            throw new Error("Invalid code");
+          }
+          else{
+            await User.updateOne({uid:userid},{verified:true});
+            await UserOTPVerification.deleteMany({uid:userid});
+            res.json({
+              success:true,
+              status:"verified",
+              message:"user email verified successfully"
+            })
+          }
+        }
+      }
+    }
+
+  }catch(error){
+    res.json({
+      success:false,
+      status:"failed",
+      message:error.message
+    })
+  }
+}
 
 export const googleAuth = async (req, res) => {
   const { name, email, uid, googleProfileImage, apiKey } = req.body;
@@ -314,3 +363,35 @@ export const removeAdmin = async (req, res) => {
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
+
+
+const sendOTPVerificationEmail= async({uid,email},res)=>{
+  try{
+    const otp=`${Math.floor(1000+Math.random()*9000)}`;
+
+    //mail options
+    const mailoptions={
+      from:process.env.EMAIL,
+      to:email,
+      subject:"email verification",
+      html:`<p>Enter <b> ${otp} </b> to verifiy your e-mail</p> <p> the otp will expire in one hour</p>`
+    };
+    const saltRounds=10;
+   const hashedOTP=await bcrypt.hash(otp,saltRounds);
+    const newotp=new UserOTPVerification({
+      uid:uid,
+      otp:otp,
+      createdAt:Date.now(),
+      expiresAt:Date.now()+3600000
+
+    })
+    await newotp.save();
+    transporter.sendMail(mailoptions);
+    res.json({success:true,status:"Pending",message:" account created successfully & verification otp sent to email",data:{
+      uid:uid,
+      email:email
+    }})
+  }catch(error){
+    res.json({status:"failed",message:error.message})
+  }
+}
