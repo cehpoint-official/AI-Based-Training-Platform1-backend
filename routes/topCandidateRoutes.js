@@ -1,8 +1,8 @@
 import express from 'express';
-import { getTopCandidate_admin, getTopCandidate_user } from '../controllers/topCandidateController.js';
+import { getPerformanceOfAllUser , getPerformanceByUID } from '../controllers/topCandidateController.js';
 
 const router = express.Router();
-router.get('/top-candidates-admin', getTopCandidate_admin);
-router.get('/top-candidates-user', getTopCandidate_user);
+router.get('/performance/all', getPerformanceOfAllUser );
+router.get('/performance/:uid', getPerformanceByUID);
 
-export default router;
+export default router; 
