@@ -2,8 +2,9 @@ import mongoose from 'mongoose';
 
 // Schema for daily performance records
 const dailyPerformanceSchema = new mongoose.Schema({
-  date: { type: Date, required: true, unique: true }, // Ensure each date is unique
-  totalScore: { type: Number, default: 0 } // Store only the total score for that day
+  date: { type: Date, required: true, unique: true },
+  totalScore: { type: Number, default: 0 },
+  count: {type: Number, default: 0}
 });
 
 // Schema for performance scores
@@ -20,7 +21,8 @@ const trackUserSchema = new mongoose.Schema({
   mName: { type: String },
   type: { type: String },
   uid: { type: String, required: true, unique: true },
-  strick: { type: Number },
+  strick: { type: Number, default: 0 },
+  max_strick: {type: Number, default: 0},
   dailyPerformance: [dailyPerformanceSchema], // Array of daily performance records
   performanceScore: { type: performanceScoreSchema, default: {} } // Store overall performance metrics
 });

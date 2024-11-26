@@ -152,3 +152,77 @@ export const getPerformanceOfAllUser = async (req, res) => {
     res.status(500).json({ success: false, error: "Server error" });
   }
 };
+
+// export const updateUserCounts = async (req, res) => {
+//   const { uid } = req.params; // Get user UID from request parameters
+
+//   try {
+//     // Fetch the user's performance data
+//     const user = await TrackUser.findOne({ uid });
+//     if (!user) {
+//       return res.status(404).json({ success: false, message: "User not found." });
+//     }
+
+//     const dailyPerformance = user.dailyPerformance;
+
+//     // Sort dailyPerformance by date (earliest first)
+//     dailyPerformance.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+//     let previousTotalScore = 0; // Initialize with 0 for the first comparison
+
+//     // Update `count` for each performance entry
+//     dailyPerformance.forEach((record, index) => {
+//       if (index === 0) {
+//         // First record: compare with 0
+//         record.count = record.totalScore > 0 ? 1 : 0;
+//       } else {
+//         // Compare today's totalScore with the previous day's totalScore
+//         record.count = record.totalScore - previousTotalScore > 0 ? 1 : 0;
+//       }
+//       previousTotalScore = record.totalScore; // Update previous score
+//     });
+
+//     // Save the updated user document
+//     await user.save();
+
+//     res.status(200).json({
+//       success: true,
+//       message: "Counts updated successfully.",
+//       data: dailyPerformance, // Optionally return the updated data
+//     });
+//   } catch (error) {
+//     console.error("Error updating user counts:", error);
+//     res.status(500).json({ success: false, message: "Server error." });
+//   }
+// };
+
+export const updateCountsForAllUsers = async (req, res) => {
+  try {
+    // Fetch all TrackUser documents
+    const allUsers = await TrackUser.find();
+
+    for (const user of allUsers) {
+      let previousTotalScore = 0; // Initialize previous score for comparison
+
+      // Update dailyPerformance with calculated count
+      user.dailyPerformance = user.dailyPerformance.map((entry) => {
+        const currentTotalScore = entry.totalScore || 0;
+        const count = currentTotalScore - previousTotalScore > 0 ? 1 : 0;
+        previousTotalScore = currentTotalScore; // Update previous score for the next iteration
+
+        return {
+          ...entry._doc, // Retain existing fields
+          count, // Add or update the count field
+        };
+      });
+
+      // Save updated document to the database
+      await user.save();
+    }
+
+    res.status(200).json({ success: true, message: "Counts updated successfully for all users." });
+  } catch (error) {
+    console.error("Error updating counts:", error);
+    res.status(500).json({ success: false, error: "Failed to update counts." });
+  }
+};
