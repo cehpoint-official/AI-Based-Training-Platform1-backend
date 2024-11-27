@@ -43,3 +43,20 @@ export const getDashboardData = async (req, res) => {
         res.status(500).json({ success: false, message: "Internal server error" });
     }
 };
+export const setapikey = async (req, res) => {
+    const { key } = req.body;
+    if (!key) {
+      return res.status(400).json({ error: "API key is required" });
+    }
+    try {
+      const result = await User.updateMany({}, { $set: { apiKey: key } });
+      console.log(`API key updated for ${result.modifiedCount} users`);
+      res.status(200).json({
+        message: "API key changed successfully for all users",
+        modifiedCount: result.modifiedCount,
+      });
+    } catch (error) {
+      console.error("Error updating API key:", error);
+      res.status(500).json({ error: "An error occurred while updating the API key" });
+    }
+  };

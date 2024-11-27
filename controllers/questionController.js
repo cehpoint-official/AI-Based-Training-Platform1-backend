@@ -44,7 +44,7 @@ export const fetchQuestions = async (req, res) => {
       console.error("Database query error:", dbError);
     }
 
-    // Generate additional AI questions if needed
+   // Generate additional AI questions if needed
     if (allQuestions.length < 10) {
       try {
         const additionalQuestions = await generateAdditionalQuestionsAI(
