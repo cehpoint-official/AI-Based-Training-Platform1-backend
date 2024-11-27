@@ -6,6 +6,7 @@ import bcrypt from 'bcrypt';
 import dotenv from 'dotenv';
 dotenv.config();
 // Configure your nodemailer transporter here
+
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 465,

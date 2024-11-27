@@ -5,6 +5,8 @@ import Quiz from "../models/Quiz.js";
 import User from "../models/User.js";
 import TrackUser from "../models/TrackUser.js";
 
+
+
 export const getPerformanceByUID = async (req, res) => {
   try {
     const { uid } = req.params; // Extract UID from params
@@ -139,6 +141,7 @@ export const getPerformanceOfAllUser = async (req, res) => {
             averageProgress: user.averageProgress,
             totalScore: totalScore,
           },
+          testScore: 0,
         });
 
         await newTrackUser .save();
@@ -229,5 +232,45 @@ export const updateCountsForAllUsers = async (req, res) => {
   } catch (error) {
     // console.error("Error updating counts and streaks:", error);
     res.status(500).json({ success: false, error: "Failed to update counts and streaks." });
+  }
+};
+
+export const updateTestScore = async (req, res) => {
+  const { uid, testScore } = req.body;
+
+  if (!uid || testScore === undefined) {
+    return res.status(400).json({ message: 'UID and testScore are required' });
+  }
+
+  try {
+    // Find the user by UID
+    const user = await TrackUser.findOne({ uid });
+
+    // If the user doesn't exist, return an error
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // If the user exists but does not have the testScore field, set it
+    if (user.testScore === undefined) {
+      user.testScore = testScore;
+      // Save the document with the new testScore
+      await user.save();
+      return res.status(200).json({
+        message: 'Test score added successfully',
+        data: user,
+      });
+    } else {
+      // If testScore exists, update it
+      user.testScore = testScore;
+      await user.save();
+      return res.status(200).json({
+        message: 'Test score updated successfully',
+        data: user,
+      });
+    }
+  } catch (error) {
+    console.error('Error updating testScore:', error);
+    return res.status(500).json({ message: 'Internal server error', error });
   }
 };
