@@ -8,13 +8,15 @@ import TrackUser from "../models/TrackUser.js";
 export const getPerformanceByUID = async (req, res) => {
   try {
     const { uid } = req.params; // Extract UID from params
-    
+
     // Find the performance data for the user
     const userTrack = await TrackUser.findOne({ uid });
     if (!userTrack) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
     }
-    
+
     res.status(200).json({ success: true, data: userTrack });
   } catch (error) {
     console.error("Error fetching performance by UID:", error);
@@ -87,62 +89,84 @@ export const getPerformanceOfAllUser = async (req, res) => {
 
     // Store or update performance in TrackUser  collection
     for (const user of usersWithDetails) {
-      const totalScore = user.projectCount + user.courseCount + user.quizScoreAvg + user.averageProgress;
+      const totalScore =
+        user.projectCount +
+        user.courseCount +
+        user.quizScoreAvg +
+        user.averageProgress;
 
-      // Get today's date
-      const today = new Date();
-      const todayString = today.toISOString().split('T')[0]; // Format date as string
-
-      // Find the existing performance record for today
-      const userTrack = await TrackUser .findOne({ uid: user.uid });
-
-      if (userTrack) {
-        // Check if today's date already exists in dailyPerformance
-        const todayPerformance = userTrack.dailyPerformance.find(
-          (entry) => entry.date.toISOString().split('T')[0] === todayString
-        );
-
-        if (todayPerformance) {
-          // If today's performance exists, update the totalScore
-          todayPerformance.totalScore = totalScore;
-        } else {
-          // If today's performance does not exist, add a new entry
-          userTrack.dailyPerformance.push({
-            date: today,
-            totalScore: totalScore,
-          });
-        }
-
-        // Update overall performance score
-        userTrack.performanceScore = {
-          projectCount: user.projectCount,
-          courseCount: user.courseCount,
-          quizScoreAvg: user.quizScoreAvg,
-          averageProgress: user.averageProgress,
-          totalScore: totalScore,
-        };
-
-        // Save the updated userTrack document
-        await userTrack.save();
-      } else {
-        // If the user does not exist in TrackUser , create a new record
-        const newTrackUser  = new TrackUser ({
-          email: user.email,
-          mName: user.mName,
-          type: user.type,
-          uid: user.uid,
-          dailyPerformance: [{ date: today, totalScore: totalScore }],
-          performanceScore: {
+        const today = new Date();
+        const todayString = today.toISOString().split('T')[0]; // Format today's date
+        const yesterday = new Date(today);
+        yesterday.setDate(today.getDate() - 1); // Calculate yesterday's date
+        const yesterdayString = yesterday.toISOString().split('T')[0];
+        
+        const userTrack = await TrackUser.findOne({ uid: user.uid });
+        
+        if (userTrack) {
+          // Find today's and yesterday's performance
+          const todayPerformance = userTrack.dailyPerformance.find(
+            (entry) => entry.date.toISOString().split('T')[0] === todayString
+          );
+        
+          const yesterdayPerformance = userTrack.dailyPerformance.find(
+            (entry) => entry.date.toISOString().split('T')[0] === yesterdayString
+          );
+        
+          const yesterdayScore = yesterdayPerformance ? yesterdayPerformance.totalScore : 0; // Default to 0 if no record
+        
+          const count = (totalScore - yesterdayScore > 0) ? 1 : 0; // Check if totalScore is greater than previous day score
+        
+          if (todayPerformance) {
+            // Update today's performance
+            todayPerformance.totalScore = totalScore;
+            todayPerformance.count = count; // Update the count based on the condition
+          } else {
+            // Add today's performance, assume previous day's score was 0 if not found
+            userTrack.dailyPerformance.push({
+              date: today,
+              totalScore: totalScore,
+              count: count, // Set count based on the condition
+            });
+          }
+        
+          // Update overall performance score
+          userTrack.performanceScore = {
             projectCount: user.projectCount,
             courseCount: user.courseCount,
             quizScoreAvg: user.quizScoreAvg,
             averageProgress: user.averageProgress,
             totalScore: totalScore,
-          },
-        });
-
-        await newTrackUser .save();
-      }
+          };
+        
+          // Save the updated userTrack document
+          await userTrack.save();
+        } else {
+          // If the user does not exist in TrackUser, create a new record
+          const newTrackUser = new TrackUser({
+            email: user.email,
+            mName: user.mName,
+            type: user.type,
+            uid: user.uid,
+            dailyPerformance: [
+              {
+                date: today,
+                totalScore: totalScore,
+                count: 0, // For the first day, the count can be 0
+              },
+            ],
+            performanceScore: {
+              projectCount: user.projectCount,
+              courseCount: user.courseCount,
+              quizScoreAvg: user.quizScoreAvg,
+              averageProgress: user.averageProgress,
+              totalScore: totalScore,
+            },
+          });
+        
+          await newTrackUser.save();
+        }
+        
     }
 
     res.status(200).json({ success: true, data: usersWithDetails });
@@ -189,45 +213,105 @@ export const updateCountsForAllUsers = async (req, res) => {
     const allUsers = await TrackUser.find();
 
     for (const user of allUsers) {
-      let previousTotalScore = 0; // Initialize previous score for comparison
-      let currentStreak = 0; // Initialize current streak
-      let maxStreak = user.max_strick || 0; // Use stored max streak or default to 0
+      let maxStreak = user.max_strick || 0; // Longest streak
+      let currentStreak = 0; // Current streak
 
-      // Update dailyPerformance with calculated count
-      user.dailyPerformance = user.dailyPerformance.map((entry) => {
-        const currentTotalScore = entry.totalScore || 0;
+      // Sort dailyPerformance by date
+      const sortedPerformance = user.dailyPerformance.sort(
+        (a, b) => new Date(a.date) - new Date(b.date)
+      );
 
-        // Calculate count
-        const count = currentTotalScore - previousTotalScore > 0 ? 1 : 0;
-        previousTotalScore = currentTotalScore; // Update previous score for the next iteration
+      let previousDate = null;
 
-        // Update streaks
-        if (count === 1) {
-          currentStreak += 1; // Increment streak for consecutive positive days
-          if (currentStreak > maxStreak) {
-            maxStreak = currentStreak; // Update max streak if current streak exceeds it
+      // Loop through dailyPerformance
+      for (const entry of sortedPerformance) {
+        const currentDate = new Date(entry.date);
+
+        if (previousDate) {
+          const dayDifference =
+            (currentDate - previousDate) / (1000 * 60 * 60 * 24); // Difference in days
+
+          if (dayDifference === 1 && entry.count === 1) {
+            // Consecutive day with count = 1
+            currentStreak += 1;
+          } else if (dayDifference > 1 || entry.count === 0) {
+            // Missing date or count = 0
+            maxStreak = Math.max(maxStreak, currentStreak); // Update max streak
+            currentStreak = entry.count === 1 ? 1 : 0; // Reset or start new streak
           }
         } else {
-          currentStreak = 0; // Reset current streak on a zero count day
+          // First entry in the loop
+          currentStreak = entry.count === 1 ? 1 : 0;
         }
 
-        return {
-          ...entry._doc, // Retain existing fields
-          count, // Add or update the count field
-        };
-      });
+        // Update previousDate for the next iteration
+        previousDate = currentDate;
+      }
 
-      // Update the user's streak and max streak
-      user.strick = currentStreak;
-      user.max_strick = maxStreak;
+      // Final update for max streak
+      maxStreak = Math.max(maxStreak, currentStreak);
 
-      // Save updated document to the database
+      // Save streaks to the user document
+      user.strick = currentStreak; // Current streak
+      user.max_strick = maxStreak; // Max streak
       await user.save();
     }
 
-    res.status(200).json({ success: true, message: "Counts and streaks updated successfully for all users." });
+    res
+      .status(200)
+      .json({
+        success: true,
+        message: "Streaks updated successfully for all users.",
+      });
   } catch (error) {
-    // console.error("Error updating counts and streaks:", error);
-    res.status(500).json({ success: false, error: "Failed to update counts and streaks." });
+    console.error("Error updating streaks:", error);
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to update streaks." });
+  }
+};
+
+export const getAllUsersPerformance = async (req, res) => {
+  try {
+    const allUsers = await TrackUser.find();
+
+    if (!allUsers || allUsers.length === 0) {
+      return res
+        .status(404)
+        .json({ success: false, message: "No users found" });
+    }
+
+    // Calculate points and filter users
+    const filteredUsers = allUsers
+      .filter(
+        (user) =>
+          user.performanceScore.courseCount >= 1 &&
+          user.performanceScore.averageProgress >= 0
+      )
+      .map((user) => {
+        const points =
+          user.performanceScore.projectCount * 10 +
+          user.performanceScore.courseCount * 1 +
+          (user.performanceScore.quizScoreAvg || 0) +
+          (user.testScore || 0) +
+          (user.performanceScore.averageProgress || 0);
+
+        return { ...user.toObject(), points };
+      })
+      .sort((a, b) => b.points - a.points); // Sort by points descending
+
+    if (filteredUsers.length === 0) {
+      return res
+        .status(404)
+        .json({ success: false, message: "No users meet the criteria" });
+    }
+
+    res.status(200).json({ success: true, data: filteredUsers });
+  } catch (error) {
+    console.error(
+      "Error filtering and sorting users' performance data:",
+      error
+    );
+    res.status(500).json({ success: false, error: "Server error" });
   }
 };
