@@ -37,7 +37,7 @@ const safetySettings = [
 ];
 
 export const handlePrompt = async (req, res) => {
-    //console.log('Received request body:', req.body); // Add logging
+    console.log('Received request body:', req.body); // Add logging
     const { prompt, useUserApiKey, userApiKey } = req.body;
 
     try {
