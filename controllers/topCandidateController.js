@@ -5,8 +5,6 @@ import Quiz from "../models/Quiz.js";
 import User from "../models/User.js";
 import TrackUser from "../models/TrackUser.js";
 
-
-
 export const getPerformanceByUID = async (req, res) => {
   try {
     const { uid } = req.params; // Extract UID from params
@@ -139,7 +137,6 @@ export const getPerformanceOfAllUser = async (req, res) => {
             quizScoreAvg: user.quizScoreAvg,
             averageProgress: user.averageProgress,
             totalScore: totalScore,
-
           };
         
           // Save the updated userTrack document
@@ -170,14 +167,6 @@ export const getPerformanceOfAllUser = async (req, res) => {
           await newTrackUser.save();
         }
         
-
-          },
-          testScore: 0,
-        });
-
-        await newTrackUser .save();
-      }
-
     }
 
     res.status(200).json({ success: true, data: usersWithDetails });

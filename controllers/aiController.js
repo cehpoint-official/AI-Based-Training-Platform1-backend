@@ -38,7 +38,7 @@ const safetySettings = [
 ];
 
 export const handlePrompt = async (req, res) => {
-    console.log('Received request body:', req.body); // Add logging
+    // console.log('Received request body:', req.body); // Add logging
     const { prompt, useUserApiKey, userApiKey } = req.body;
 
     try {
@@ -188,7 +188,7 @@ export const getImage = async (req, res) => {
 
 export const getYouTubeVideo = async (req, res) => {
     const { prompt } = req.body;
-    console.log(prompt);
+    // console.log(prompt);
     try {
         const results = await youtubesearchapi.GetListByKeyword(
             prompt,    
@@ -205,11 +205,11 @@ export const getYouTubeVideo = async (req, res) => {
             title: video.title,
             similarity:compareTwoStrings(prompt, video.title)
           }));
-          console.log(similarities);
+        //   console.log(similarities);
           const mostRelevantVideo = similarities.reduce((prev, current) => 
             current.similarity > prev.similarity ? current : prev
           );
-          console.log("Most relevant video:", mostRelevantVideo);
+        //   console.log("Most relevant video:", mostRelevantVideo);
           const videoId = mostRelevantVideo.id;
         res.status(200).json({ url: videoId });
     } catch (error) {
