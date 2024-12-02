@@ -115,7 +115,7 @@ export const getPerformanceOfAllUser = async (req, res) => {
         
           const yesterdayScore = yesterdayPerformance ? yesterdayPerformance.totalScore : 0; // Default to 0 if no record
         
-          const count = (totalScore - yesterdayScore > 0) ? 1 : 0; // Check if totalScore is greater than previous day score
+          const count = (totalScore - yesterdayScore != 0) ? 1 : 0; // Check if totalScore is greater than previous day score
         
           if (todayPerformance) {
             // Update today's performance
