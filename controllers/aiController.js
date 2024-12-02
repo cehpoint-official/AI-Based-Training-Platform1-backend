@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
 import gis from "g-i-s";
+import { compareTwoStrings } from "string-similarity";
 import { createApi } from "unsplash-js";
 import youtubesearchapi from "youtube-search-api";
 import { YoutubeTranscript } from "youtube-transcript";
@@ -37,7 +38,7 @@ const safetySettings = [
 ];
 
 export const handlePrompt = async (req, res) => {
-    //console.log('Received request body:', req.body); // Add logging
+    console.log('Received request body:', req.body); // Add logging
     const { prompt, useUserApiKey, userApiKey } = req.body;
 
     try {
@@ -187,10 +188,29 @@ export const getImage = async (req, res) => {
 
 export const getYouTubeVideo = async (req, res) => {
     const { prompt } = req.body;
-
+    console.log(prompt);
     try {
-        const video = await youtubesearchapi.GetListByKeyword(prompt, [false], [1], [{ type: "video" }]);
-        const videoId = video.items[0].id;
+        const results = await youtubesearchapi.GetListByKeyword(
+            prompt,    
+            false,     
+            5,          
+            [{ type: "video" }] 
+          );
+          const videoData = results.items.map((video) => ({
+            id: video.id,       
+            title: video.title   
+          }));
+          const similarities = videoData.map((video) => ({
+            id: video.id,
+            title: video.title,
+            similarity:compareTwoStrings(prompt, video.title)
+          }));
+          console.log(similarities);
+          const mostRelevantVideo = similarities.reduce((prev, current) => 
+            current.similarity > prev.similarity ? current : prev
+          );
+          console.log("Most relevant video:", mostRelevantVideo);
+          const videoId = mostRelevantVideo.id;
         res.status(200).json({ url: videoId });
     } catch (error) {
         console.error("Error in getYouTubeVideo:", error);
