@@ -74,6 +74,7 @@ export const signup = async (req, res) => {
       unsplashApiKey,
       userapikey1:null,
       userapikey2:null,
+      permission:false,
       verified:false
     });
     await newUser.save().then((result)=>{
@@ -279,7 +280,7 @@ export const updateProfile = async (req, res) => {
 
 export const getUsers = async (req, res) => {
   try {
-    const users = await User.find({}, 'email mName type _id');
+    const users = await User.find({}, 'email mName type _id permission uid');
     res.json(users);
   } catch (error) {
     console.error('Error fetching users:', error);
