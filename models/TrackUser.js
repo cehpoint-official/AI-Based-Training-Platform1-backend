@@ -22,7 +22,7 @@ const trackUserSchema = new mongoose.Schema({
   type: { type: String },
   uid: { type: String, required: true, unique: true },
   strick: { type: Number, default: 0 },
-  testScore: {type: Number,default: 0},
+  testScore: {type: Number, default: 0},
   max_strick: {type: Number, default: 0},
   dailyPerformance: [dailyPerformanceSchema], // Array of daily performance records
   performanceScore: { type: performanceScoreSchema, default: {} } // Store overall performance metrics

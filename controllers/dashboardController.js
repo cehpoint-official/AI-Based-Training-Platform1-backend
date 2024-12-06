@@ -1,6 +1,7 @@
 import User from '../models/User.js';
 import Course from '../models/Course.js';
 
+
 export const getDashboardData = async (req, res) => {
     try {
         // Get total number of users
@@ -60,3 +61,25 @@ export const setapikey = async (req, res) => {
       res.status(500).json({ error: "An error occurred while updating the API key" });
     }
   };
+  // Update permission field
+export const updatePermission = async (req, res) => {
+  const { email } = req.body; // Extract user ID from request params
+  const { permission } = req.body; // Extract permission from request body
+
+  try {
+    // Find the user by UID
+    const user = await User.findOne({email});
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Update the permission field
+    user.permission = permission;
+    await user.save();
+
+    res.status(200).json({ message: "Permission updated successfully", user });
+  } catch (error) {
+    res.status(500).json({ message: "Error updating permission", error: error.message });
+  }
+};

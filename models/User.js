@@ -21,6 +21,7 @@ const userSchema = new mongoose.Schema({
   userapikey1:{ type: String, default: null },
   userapikey2:{ type: String, default: null },
   verified:{ type: Boolean, default: false },
+  permission:{ type: Boolean, default: false },
 });
 
 export default mongoose.model("User", userSchema);
