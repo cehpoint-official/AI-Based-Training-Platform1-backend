@@ -5,8 +5,6 @@ import Quiz from "../models/Quiz.js";
 import User from "../models/User.js";
 import TrackUser from "../models/TrackUser.js";
 
-
-
 export const getPerformanceByUID = async (req, res) => {
   try {
     const { uid } = req.params; // Extract UID from params
@@ -89,6 +87,7 @@ export const getPerformanceOfAllUser = async (req, res) => {
 
     // Store or update performance in TrackUser  collection
     for (const user of usersWithDetails) {
+
       const totalScore = user.projectCount + user.courseCount + user.quizScoreAvg + user.averageProgress;
 
       // Get today's date
@@ -107,6 +106,7 @@ export const getPerformanceOfAllUser = async (req, res) => {
         if (todayPerformance) {
           // If today's performance exists, update the totalScore
           todayPerformance.totalScore = totalScore;
+
         } else {
           // If today's performance does not exist, add a new entry
           userTrack.dailyPerformance.push({
@@ -114,6 +114,7 @@ export const getPerformanceOfAllUser = async (req, res) => {
             totalScore: totalScore,
           });
         }
+
 
         // Update overall performance score
         userTrack.performanceScore = {
@@ -146,6 +147,7 @@ export const getPerformanceOfAllUser = async (req, res) => {
 
         await newTrackUser .save();
       }
+
     }
 
     res.status(200).json({ success: true, data: usersWithDetails });
