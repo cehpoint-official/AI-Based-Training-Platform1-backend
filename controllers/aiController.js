@@ -188,21 +188,33 @@ export const getImage = async (req, res) => {
 
 export const getYouTubeVideo = async (req, res) => {
     const { prompt } = req.body;
+<<<<<<< HEAD
     console.log(prompt.split(":")[0]);
     try {
         const results = await youtubesearchapi.GetListByKeyword(
             prompt,
+=======
+    // console.log(prompt);
+    try {
+        const results = await youtubesearchapi.GetListByKeyword(
+            prompt,    
+>>>>>>> a1222b3a723a2d3bac8107802ecb2ca1cf61aba3
             false,     
             5,          
             [{ type: "video" }] 
           );
           const videoData = results.items.map((video) => ({
+<<<<<<< HEAD
             id: video.id,     
+=======
+            id: video.id,       
+>>>>>>> a1222b3a723a2d3bac8107802ecb2ca1cf61aba3
             title: video.title   
           }));
           const similarities = videoData.map((video) => ({
             id: video.id,
             title: video.title,
+<<<<<<< HEAD
             similarity:compareTwoStrings(prompt.split(":")[0], video.title)
           }));
           console.log(similarities);
@@ -212,6 +224,16 @@ export const getYouTubeVideo = async (req, res) => {
           console.log("Most relevant video:", mostRelevantVideo);
           const videoId = mostRelevantVideo.id;
         //   const videoId = videoData[0].id;
+=======
+            similarity:compareTwoStrings(prompt, video.title)
+          }));
+        //   console.log(similarities);
+          const mostRelevantVideo = similarities.reduce((prev, current) => 
+            current.similarity > prev.similarity ? current : prev
+          );
+        //   console.log("Most relevant video:", mostRelevantVideo);
+          const videoId = mostRelevantVideo.id;
+>>>>>>> a1222b3a723a2d3bac8107802ecb2ca1cf61aba3
         res.status(200).json({ url: videoId });
     } catch (error) {
         console.error("Error in getYouTubeVideo:", error);
