@@ -1,0 +1,122 @@
+[
+    {
+        "id": "fallback_generic_1",
+        "question": "Tell me about a significant project you have worked on and your role in it.",
+        "type": "text",
+        "skills": ["project-experience"]
+    },
+    {
+        "id": "fallback_generic_2",
+        "question": "Describe a challenging situation in a project and how you handled it.",
+        "type": "text",
+        "skills": ["problem-solving"]
+    },
+    {
+        "id": "fallback_generic_3",
+        "question": "How do you prioritize tasks when managing multiple deadlines?",
+        "type": "text",
+        "skills": ["time-management"]
+    },
+    {
+        "id": "fallback_generic_4",
+        "question": "What is your approach to working within a team?",
+        "type": "text",
+        "skills": ["teamwork"]
+    },
+    {
+        "id": "fallback_generic_5",
+        "question": "How do you handle conflicts with colleagues or team members?",
+        "type": "text",
+        "skills": ["teamwork"]
+    },
+    {
+        "id": "fallback_generic_6",
+        "question": "Can you share an example of a time you had to quickly adapt to a new situation?",
+        "type": "text",
+        "skills": ["adaptability"]
+    },
+    {
+        "id": "fallback_generic_7",
+        "question": "Describe how you approach setting and achieving goals in a project.",
+        "type": "text",
+        "skills": ["goal-setting"]
+    },
+    {
+        "id": "fallback_generic_8",
+        "question": "How do you ensure effective communication with team members?",
+        "type": "text",
+        "skills": ["communication"]
+    },
+    {
+        "id": "fallback_generic_9",
+        "question": "Tell me about a time you had to give constructive feedback.",
+        "type": "text",
+        "skills": ["communication"]
+    },
+    {
+        "id": "fallback_generic_10",
+        "question": "What steps do you take to organize and manage your workload?",
+        "type": "text",
+        "skills": ["time-management"]
+    },
+    {
+        "id": "fallback_generic_11",
+        "question": "Describe a time you successfully met a challenging deadline.",
+        "type": "text",
+        "skills": ["time-management"]
+    },
+    {
+        "id": "fallback_generic_12",
+        "question": "How do you stay motivated when working on long-term projects?",
+        "type": "text",
+        "skills": ["motivation"]
+    },
+    {
+        "id": "fallback_generic_13",
+        "question": "Tell me about a time you took initiative to improve a process.",
+        "type": "text",
+        "skills": ["initiative"]
+    },
+    {
+        "id": "fallback_generic_14",
+        "question": "What is your approach to managing stress or pressure at work?",
+        "type": "text",
+        "skills": ["stress-management"]
+    },
+    {
+        "id": "fallback_generic_15",
+        "question": "How do you ensure that your work aligns with the company’s goals?",
+        "type": "text",
+        "skills": ["goal-alignment"]
+    },
+    {
+        "id": "fallback_generic_16",
+        "question": "Describe a time you collaborated with someone from a different department.",
+        "type": "text",
+        "skills": ["collaboration"]
+    },
+    {
+        "id": "fallback_generic_17",
+        "question": "How do you handle feedback on your work?",
+        "type": "text",
+        "skills": ["feedback-handling"]
+    },
+    {
+        "id": "fallback_generic_18",
+        "question": "What strategies do you use to remain organized and productive?",
+        "type": "text",
+        "skills": ["organization"]
+    },
+    {
+        "id": "fallback_generic_19",
+        "question": "Tell me about a time when you improved your work based on feedback.",
+        "type": "text",
+        "skills": ["feedback-adaptation"]
+    },
+    {
+        "id": "fallback_generic_20",
+        "question": "How do you balance quality and efficiency in your work?",
+        "type": "text",
+        "skills": ["efficiency"]
+    }
+]
