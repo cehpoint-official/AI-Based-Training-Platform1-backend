@@ -1,5 +1,4 @@
-import path from 'path';
-import { fileURLToPath } from 'url';
+
 import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
@@ -37,16 +36,15 @@ connectDB();
 
 // CORS configuration
 const allowedOrigins = [
- "https://ai-skill-enhancement-and-job-readiness.cehpoint.co.in",
- "https://ai-based-training-platfo-ca895.web.app",
-  "http://localhost:5173",
+  "http://localhost:5000",
   "http://localhost:5174",
+  
+  "http://edtech-api.cehpoint.co.in:5000",
+  "http://edtech-api.cehpoint.co.in:5000",
   "https://ai-based-training-platfo-ca895.web.app",
   "https://ai-based-training-by-ariba-2d081.web.app",
   "https://ai-skill-enhancement-and-job-readiness.cehpoint.co.in",
 ];
-
-
 
 const corsOptions = {
   origin: function (origin, callback) {
@@ -64,38 +62,6 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 app.use(bodyParser.json());
-
-
-// Get the directory name using import.meta.url
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Serve frontend files
-app.use(express.static(path.join(__dirname, '../AI-Based-Training-Platform-Vite')));
-app.use(express.static(path.join(__dirname, '../AI-Based-Training-Platform-Vite/index.html')));
-
-app.use("/AI-Based-Training-Platform-Vite",express.static(path.join(__dirname, "../AI-Based-Training-Platform-Vite")));
-
-app.use("/App.jsx",express.static(path.join(__dirname, "../AI-Based-Training-Platform-Vite/src/App.jsx")));
-
-app.use("/index.css",express.static(path.join(__dirname, "../AI-Based-Training-Platform-Vite/src/index.css")));
-
-app.use("/index.html",express.static(path.join(__dirname, "../AI-Based-Training-Platform-Vite/index.html")));
-
-
-app.use("/firebasedet",express.static(path.join(__dirname, "../AI-Based-Training-Platform-Vite/firebasedet.js")));
-
-
-// Catch-all route to serve index.html (to handle client-side routing for React or other frameworks)
-app.get('index.html', (req, res) => {
-  res.sendFile(path.join(__dirname, '../AI-Based-Training-Platform-Vite/index.html'));
-});
-
-app.use(express.static(path.join(__dirname, '../AI-Based-Training-Platform-Vite')));
-app.use("/AI-Based-Training-Platform-Vite",express.static(path.join(__dirname, "../AI-Based-Training-Platform-Vite")));
-app.get('index.html', (req, res) => {
-  res.sendFile(path.join(__dirname, '../AI-Based-Training-Platform-Vite/index.html'));
-});
 
 // Nodemailer transporter
 const transporter = nodemailer.createTransport({
@@ -162,7 +128,7 @@ app.use('/api', topcandidateRoutes);
 //   res.status(500).send('Something broke!');
 // });
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT;
 
 // For local development
 app.listen(PORT, () => {
