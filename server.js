@@ -41,7 +41,7 @@ const allowedOrigins = [
   // "https://ai-based-training-platfo-ca895.web.app",
   // "https://ai-based-training-by-ariba-2d081.web.app",
   // "https://ai-skill-enhancement-and-job-readiness.cehpoint.co.in",
-  "https://ai-based-training-rishavg.web.app/",
+  "https://ai-based-training-rishavg.web.app",
 ];
 
 const corsOptions = {

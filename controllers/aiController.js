@@ -188,6 +188,7 @@ export const getImage = async (req, res) => {
 
 export const getYouTubeVideo = async (req, res) => {
     const { prompt } = req.body;
+    console.log(prompt);
     console.log(prompt.split(":")[0]);
     try {
         const results = await youtubesearchapi.GetListByKeyword(
@@ -203,7 +204,7 @@ export const getYouTubeVideo = async (req, res) => {
           const similarities = videoData.map((video) => ({
             id: video.id,
             title: video.title,
-            similarity:compareTwoStrings(prompt.split(":")[0], video.title)
+            similarity:compareTwoStrings(prompt, video.title)
           }));
           console.log(similarities);
           const mostRelevantVideo = similarities.reduce((prev, current) => 
