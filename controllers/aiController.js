@@ -188,16 +188,17 @@ export const getImage = async (req, res) => {
 
 export const getYouTubeVideo = async (req, res) => {
     const { prompt } = req.body;
-    // console.log(prompt);
+    console.log(prompt);
+    console.log(prompt.split(":")[0]);
     try {
         const results = await youtubesearchapi.GetListByKeyword(
-            prompt,    
+            prompt,
             false,     
             5,          
             [{ type: "video" }] 
           );
           const videoData = results.items.map((video) => ({
-            id: video.id,       
+            id: video.id,     
             title: video.title   
           }));
           const similarities = videoData.map((video) => ({
@@ -205,12 +206,13 @@ export const getYouTubeVideo = async (req, res) => {
             title: video.title,
             similarity:compareTwoStrings(prompt, video.title)
           }));
-        //   console.log(similarities);
+          console.log(similarities);
           const mostRelevantVideo = similarities.reduce((prev, current) => 
             current.similarity > prev.similarity ? current : prev
           );
-        //   console.log("Most relevant video:", mostRelevantVideo);
+          console.log("Most relevant video:", mostRelevantVideo);
           const videoId = mostRelevantVideo.id;
+        //   const videoId = videoData[0].id;
         res.status(200).json({ url: videoId });
     } catch (error) {
         console.error("Error in getYouTubeVideo:", error);
