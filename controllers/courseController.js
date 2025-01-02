@@ -20,9 +20,9 @@ const transporter = nodemailer.createTransport({
 });
 
 export const createCourse = async (req, res) => {
-    const { user, content, type, mainTopic } = req.body;
+    const { user, content, type, mainTopic, lang } = req.body;
 
-    if (!user || !content || !type || !mainTopic) {
+    if (!user || !content || !type || !mainTopic || !lang) {
         return res.status(400).json({ success: false, message: "Missing required fields" });
     }
 
@@ -51,6 +51,7 @@ export const createCourse = async (req, res) => {
             user,
             content,
             type,
+            lang,
             mainTopic,
             photo,
 

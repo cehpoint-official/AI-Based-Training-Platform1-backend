@@ -4,6 +4,7 @@ const courseSchema = new mongoose.Schema({
   user: String,
   content: { type: String, required: true },
   type: String,
+  lang: String,
   mainTopic: String,
   subTopic: String,
   photo: String,
