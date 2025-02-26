@@ -51,12 +51,12 @@ export const handlePrompt = async (req, res) => {
       // console.log('Using user API key'); // Add logging
       const genAIuser = new GoogleGenerativeAI(userApiKey);
       model = genAIuser.getGenerativeModel({
-        model: "gemini-pro",
+        model: "gemini-1.5-pro",
         safetySettings,
       });
     } else {
       // console.log('Using default API key'); // Add logging
-      model = genAI.getGenerativeModel({ model: "gemini-pro", safetySettings });
+      model = genAI.getGenerativeModel({ model: "gemini-1.5-pro", safetySettings });
     }
 
     // console.log('Generating content for prompt:', prompt); // Add logging
@@ -99,11 +99,11 @@ export const generateContent = async (req, res) => {
     if (useUserApiKey && userApiKey) {
       const genAIuser = new GoogleGenerativeAI(userApiKey);
       model = genAIuser.getGenerativeModel({
-        model: "gemini-pro",
+        model: "gemini-1.5-pro",
         safetySettings,
       });
     } else {
-      model = genAI.getGenerativeModel({ model: "gemini-pro", safetySettings });
+      model = genAI.getGenerativeModel({ model: "gemini-1.5-pro", safetySettings });
     }
 
     const result = await model.generateContent(prompt);
@@ -143,7 +143,7 @@ export const getProjectSuggestions = async (req, res) => {
   try {
     // This is a placeholder. You'll need to implement or integrate with an actual AI service for project suggestions
     const model = genAI.getGenerativeModel({
-      model: "gemini-pro",
+      model: "gemini-1.5-pro",
       safetySettings,
     });
     const result = await model.generateContent(
@@ -303,11 +303,11 @@ export const aiGeneratedExplanation = async (req, res) => {
     if (useUserApiKey && apiKey) {
       const genAIuser = new GoogleGenerativeAI(apiKey); // Initialize with user's API key
       model = genAIuser.getGenerativeModel({
-        model: "gemini-pro",
+        model: "gemini-1.5-pro",
         safetySettings,
       });
     } else {
-      model = genAI.getGenerativeModel({ model: "gemini-pro", safetySettings }); // Default server model
+      model = genAI.getGenerativeModel({ model: "gemini-1.5-pro", safetySettings }); // Default server model
     }
 
     // Generate the explanation based on the prompt
