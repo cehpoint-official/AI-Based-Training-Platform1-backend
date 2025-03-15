@@ -1,4 +1,4 @@
-import User from '../models/User.js'; 
+import User from '../models/User.js';
 import UserOTPVerification from '../models/UserOTPVerification.js';
 import crypto from 'crypto';
 import nodemailer from 'nodemailer';
@@ -53,7 +53,7 @@ export const signin = async (req, res) => {
 };
 
 export const signup = async (req, res) => {
-  const { email, mName, password, type, uid, profile, apiKey,unsplashApiKey } = req.body;
+  const { email, mName, password, type, uid, profile, apiKey, unsplashApiKey } = req.body;
 
   try {
     const existingUser = await User.findOne({ email });
@@ -72,13 +72,13 @@ export const signup = async (req, res) => {
       profile,
       apiKey,
       unsplashApiKey,
-      userapikey1:null,
-      userapikey2:null,
-      verified:false
+      userapikey1: null,
+      userapikey2: null,
+      verified: false
     });
-    await newUser.save().then((result)=>{
+    await newUser.save().then((result) => {
       //handle verification
-      sendOTPVerificationEmail(result,res);
+      sendOTPVerificationEmail(result, res);
     });
     // res.json({
     //   success: true,
@@ -90,44 +90,44 @@ export const signup = async (req, res) => {
   }
 };
 
-export const verify=async (req,res)=>{
-  try{
-    const {userid,otp}=req.body;
-    if(!userid || !otp){
+export const verify = async (req, res) => {
+  try {
+    const { userid, otp } = req.body;
+    if (!userid || !otp) {
       throw Error("empty details");
-    }else{
-      const  records=await UserOTPVerification.find({uid:userid});
-      if(records.length<=0){
+    } else {
+      const records = await UserOTPVerification.find({ uid: userid });
+      if (records.length <= 0) {
         throw new Error("account is invalid or has already been verified");
-      }else{
-        const{expiresAt} =records[0];
-        if(expiresAt<Date.now()){
-          await UserOTPVerification.deleteMany({uid:userid});
+      } else {
+        const { expiresAt } = records[0];
+        if (expiresAt < Date.now()) {
+          await UserOTPVerification.deleteMany({ uid: userid });
           throw new Error("code has expired")
-        }else{
+        } else {
           const storedOTP = records[0].otp;
-          const valid= String(otp).trim() === String(storedOTP).trim();
-          if(!valid){
+          const valid = String(otp).trim() === String(storedOTP).trim();
+          if (!valid) {
             throw new Error("Invalid code");
           }
-          else{
-            await User.updateOne({uid:userid},{verified:true});
-            await UserOTPVerification.deleteMany({uid:userid});
+          else {
+            await User.updateOne({ uid: userid }, { verified: true });
+            await UserOTPVerification.deleteMany({ uid: userid });
             res.json({
-              success:true,
-              status:"verified",
-              message:"user email verified successfully"
+              success: true,
+              status: "verified",
+              message: "user email verified successfully"
             })
           }
         }
       }
     }
 
-  }catch(error){
+  } catch (error) {
     res.json({
-      success:false,
-      status:"failed",
-      message:error.message
+      success: false,
+      status: "failed",
+      message: error.message
     })
   }
 }
@@ -308,6 +308,24 @@ export const getUserById = async (req, res) => {
   }
 };
 
+export const getUserApiKeys = async (req, res) => {
+  try {
+    // Find users with non-null API keys
+    const users = await User.find(
+      { userapikey1: { $ne: null } },
+      { userapikey1: 1, _id: 0 } // Only retrieve userapikey1
+    ).limit(3); // Limit to 3 users
+
+    const apiKeys = users.map(user => user.userapikey1); // Extract API keys
+    console.log(apiKeys);
+
+    res.json({ success: true, apiKeys });
+  } catch (error) {
+    console.error("Error fetching API keys:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
 export const getAdmins = async (req, res) => {
   try {
     const admins = await User.find({ role: "admin" }, 'email mName');
@@ -366,33 +384,35 @@ export const removeAdmin = async (req, res) => {
 };
 
 
-const sendOTPVerificationEmail= async({uid,email},res)=>{
-  try{
-    const otp=`${Math.floor(1000+Math.random()*9000)}`;
+const sendOTPVerificationEmail = async ({ uid, email }, res) => {
+  try {
+    const otp = `${Math.floor(1000 + Math.random() * 9000)}`;
 
     //mail options
-    const mailoptions={
-      from:process.env.EMAIL,
-      to:email,
-      subject:"email verification",
-      html:`<p>Enter <b> ${otp} </b> to verifiy your e-mail</p> <p> the otp will expire in one hour</p>`
+    const mailoptions = {
+      from: process.env.EMAIL,
+      to: email,
+      subject: "email verification",
+      html: `<p>Enter <b> ${otp} </b> to verifiy your e-mail</p> <p> the otp will expire in one hour</p>`
     };
-    const saltRounds=10;
-   const hashedOTP=await bcrypt.hash(otp,saltRounds);
-    const newotp=new UserOTPVerification({
-      uid:uid,
-      otp:otp,
-      createdAt:Date.now(),
-      expiresAt:Date.now()+3600000
+    const saltRounds = 10;
+    const hashedOTP = await bcrypt.hash(otp, saltRounds);
+    const newotp = new UserOTPVerification({
+      uid: uid,
+      otp: otp,
+      createdAt: Date.now(),
+      expiresAt: Date.now() + 3600000
 
     })
     await newotp.save();
     transporter.sendMail(mailoptions);
-    res.json({success:true,status:"Pending",message:" account created successfully & verification otp sent to email",data:{
-      uid:uid,
-      email:email
-    }})
-  }catch(error){
-    res.json({status:"failed",message:error.message})
+    res.json({
+      success: true, status: "Pending", message: " account created successfully & verification otp sent to email", data: {
+        uid: uid,
+        email: email
+      }
+    })
+  } catch (error) {
+    res.json({ status: "failed", message: error.message })
   }
 }
