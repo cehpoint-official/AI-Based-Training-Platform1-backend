@@ -373,7 +373,12 @@ export const removeAdmin = async (req, res) => {
       return res.status(400).json({ success: false, message: "User  is not an admin" });
     }
 
-    user.role = "";
+    user.role = "user";
+
+    if (!user.uid) {
+      user.uid = user._id.toString(); // Assign a fallback if missing
+    }
+
     await user.save();
 
     res.json({ success: true, message: "User  removed as admin" });
