@@ -7,7 +7,7 @@ export const getDashboardData = async (req, res) => {
         const userCount = await User.countDocuments();
 
         // Get number of admin users
-        const adminCount = await User.countDocuments({ role: "admin" });
+        const admins = await User.find({ role: "admin" }, "email");
 
         // Get number of free and paid users
         const freeCount = await User.countDocuments({ type: "free" });
@@ -28,7 +28,7 @@ export const getDashboardData = async (req, res) => {
         // Prepare the response object
         const dashboardData = {
             users: userCount,
-            admins: adminCount,
+            admins: admins,
             frees: freeCount,
             paids: paidCount,
             courses: courseCount,
@@ -43,6 +43,7 @@ export const getDashboardData = async (req, res) => {
         res.status(500).json({ success: false, message: "Internal server error" });
     }
 };
+
 export const setapikey = async (req, res) => {
     const { key } = req.body;
     if (!key) {
