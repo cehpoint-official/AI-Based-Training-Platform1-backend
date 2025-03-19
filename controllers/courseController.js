@@ -155,6 +155,29 @@ export const getAllCourses = async (req, res) => {
     }
 };
 
+export const deleteCourse = async (req, res) => {
+    try {
+        const { courseId } = req.params;
+        
+        // Check if course exists
+        const course = await Course.findById(courseId);
+        if (!course) {
+            return res.status(404).json({ success: false, message: "Course not found" });
+        }
+        
+        // Delete the course
+        await Course.findByIdAndDelete(courseId);
+        
+        res.status(200).json({ 
+            success: true, 
+            message: "Course deleted successfully" 
+        });
+    } catch (error) {
+        console.error('Error deleting course:', error);
+        res.status(500).json({ success: false, message: "Internal server error" });
+    }
+};
+
 export const updateProgress = async (req, res) => {
     const { courseId, progress, completed } = req.body;
     

@@ -11,5 +11,6 @@ router.post('/sendcertificate', courseController.sendCertificate);
 router.get('/courses', courseController.getCourses);
 router.get('/getcourses', courseController.getAllCourses);
 router.post('/updateProgress', courseController.updateProgress);
+router.delete('/deletecourses/:courseId', courseController.deleteCourse);
 
 export default router;
