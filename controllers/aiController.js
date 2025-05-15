@@ -13,8 +13,8 @@ dotenv.config();
 // Initialize the Google Generative AI with the API key
 const genAI = new GoogleGenerativeAI(process.env.API_KEY);
 // Initialize Unsplash
-const unsplash = createApi({ 
-    accessKey: process.env.UNSPLASH_ACCESS_KEY 
+const unsplash = createApi({
+    accessKey: process.env.UNSPLASH_ACCESS_KEY
 });
 
 // Define safety settings
@@ -46,10 +46,10 @@ export const handlePrompt = async (req, res) => {
         if (useUserApiKey && userApiKey) {
             // console.log('Using user API key'); // Add logging
             const genAIuser = new GoogleGenerativeAI(userApiKey);
-            model = genAIuser.getGenerativeModel({ model: "gemini-pro", safetySettings });
+            model = genAIuser.getGenerativeModel({ model: "gemini-1.5-pro", safetySettings });
         } else {
             // console.log('Using default API key'); // Add logging
-            model = genAI.getGenerativeModel({ model: "gemini-pro", safetySettings });
+            model = genAI.getGenerativeModel({ model: "gemini-1.5-pro", safetySettings });
         }
 
         // console.log('Generating content for prompt:', prompt); // Add logging
@@ -59,7 +59,7 @@ export const handlePrompt = async (req, res) => {
         res.status(200).json({ generatedText });
     } catch (error) {
         console.error("Error in handlePrompt:", error);
-        
+
         if (error.message.includes('API_KEY_INVALID')) {
             res.status(400).json({
                 success: false,
@@ -73,8 +73,8 @@ export const handlePrompt = async (req, res) => {
                 error: "The API key doesn't have permission to access this resource. Please check your API key permissions."
             });
         } else {
-            res.status(500).json({ 
-                success: false, 
+            res.status(500).json({
+                success: false,
                 message: "Internal server error",
                 error: error.message
             });
@@ -89,9 +89,9 @@ export const generateContent = async (req, res) => {
         let model;
         if (useUserApiKey && userApiKey) {
             const genAIuser = new GoogleGenerativeAI(userApiKey);
-            model = genAIuser.getGenerativeModel({ model: "gemini-pro", safetySettings });
+            model = genAIuser.getGenerativeModel({ model: "gemini-1.5-pro", safetySettings });
         } else {
-            model = genAI.getGenerativeModel({ model: "gemini-pro", safetySettings });
+            model = genAI.getGenerativeModel({ model: "gemini-1.5-pro", safetySettings });
         }
 
         const result = await model.generateContent(prompt);
@@ -130,7 +130,7 @@ export const getProjectSuggestions = async (req, res) => {
 
     try {
         // This is a placeholder. You'll need to implement or integrate with an actual AI service for project suggestions
-        const model = genAI.getGenerativeModel({ model: "gemini-pro", safetySettings });
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro", safetySettings });
         const result = await model.generateContent(`Generate project suggestions based on: ${prompt}`);
         const suggestions = result.response.text().split('\n').filter(suggestion => suggestion.trim() !== '');
         res.json({ suggestions });
@@ -191,26 +191,26 @@ export const getYouTubeVideo = async (req, res) => {
     // console.log(prompt);
     try {
         const results = await youtubesearchapi.GetListByKeyword(
-            prompt,    
-            false,     
-            5,          
-            [{ type: "video" }] 
-          );
-          const videoData = results.items.map((video) => ({
-            id: video.id,       
-            title: video.title   
-          }));
-          const similarities = videoData.map((video) => ({
+            prompt,
+            false,
+            5,
+            [{ type: "video" }]
+        );
+        const videoData = results.items.map((video) => ({
+            id: video.id,
+            title: video.title
+        }));
+        const similarities = videoData.map((video) => ({
             id: video.id,
             title: video.title,
-            similarity:compareTwoStrings(prompt, video.title)
-          }));
+            similarity: compareTwoStrings(prompt, video.title)
+        }));
         //   console.log(similarities);
-          const mostRelevantVideo = similarities.reduce((prev, current) => 
+        const mostRelevantVideo = similarities.reduce((prev, current) =>
             current.similarity > prev.similarity ? current : prev
-          );
+        );
         //   console.log("Most relevant video:", mostRelevantVideo);
-          const videoId = mostRelevantVideo.id;
+        const videoId = mostRelevantVideo.id;
         res.status(200).json({ url: videoId });
     } catch (error) {
         console.error("Error in getYouTubeVideo:", error);
@@ -274,36 +274,36 @@ export const sendEmail = async (req, res) => {
 
 export const aiGeneratedExplanation = async (req, res) => {
     const { prompt, useUserApiKey, apiKey } = req.body;
-  
+
     try {
-      // Initialize AI model based on user-provided API key or default server key
-      let model;
-      if (useUserApiKey && apiKey) {
-        const genAIuser = new GoogleGenerativeAI(apiKey); // Initialize with user's API key
-        model = genAIuser.getGenerativeModel({ model: "gemini-pro", safetySettings });
-      } else {
-        model = genAI.getGenerativeModel({ model: "gemini-pro", safetySettings }); // Default server model
-      }
-  
-      // Generate the explanation based on the prompt
-      const result = await model.generateContent(prompt);
-      const generatedExplanation = result.response.text();
-  
-      // Convert Markdown to HTML using Showdown
-      const converter = new showdown.Converter();
-      const htmlExplanation = converter.makeHtml(generatedExplanation);
-  
-      // Respond with the AI-generated explanation in HTML
-      res.status(200).json({ success: true, explanation: htmlExplanation });
+        // Initialize AI model based on user-provided API key or default server key
+        let model;
+        if (useUserApiKey && apiKey) {
+            const genAIuser = new GoogleGenerativeAI(apiKey); // Initialize with user's API key
+            model = genAIuser.getGenerativeModel({ model: "gemini-1.5-pro", safetySettings });
+        } else {
+            model = genAI.getGenerativeModel({ model: "gemini-1.5-pro", safetySettings }); // Default server model
+        }
+
+        // Generate the explanation based on the prompt
+        const result = await model.generateContent(prompt);
+        const generatedExplanation = result.response.text();
+
+        // Convert Markdown to HTML using Showdown
+        const converter = new showdown.Converter();
+        const htmlExplanation = converter.makeHtml(generatedExplanation);
+
+        // Respond with the AI-generated explanation in HTML
+        res.status(200).json({ success: true, explanation: htmlExplanation });
     } catch (error) {
-      console.error("Error in aiGeneratedExplanation:", error);
-      res.status(500).json({
-        success: false,
-        message: "Failed to generate explanation. Please try again.",
-        error: error.message,
-      });
+        console.error("Error in aiGeneratedExplanation:", error);
+        res.status(500).json({
+            success: false,
+            message: "Failed to generate explanation. Please try again.",
+            error: error.message,
+        });
     }
-  };
+};
 
 
 

@@ -17,5 +17,6 @@ router.post('/addadmin', userController.addAdmin);
 router.post('/removeadmin', userController.removeAdmin);
 router.get('/user/getUserByID', userController.getUserById);
 router.get('/user/getProfile', userController.getProfile);
+router.get('/user/getKeys', userController.getUserApiKeys);
 
 export default router;

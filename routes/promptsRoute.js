@@ -31,10 +31,10 @@ promptRouter.post("/prompt", async (req, res) => {
     },
   ];
   let genAIuser;
-  if(useUserApiKey && userApiKey!==null){
-    genAIuser=new GoogleGenerativeAI(userApiKey);
-    const model=genAIuser.getGenerativeModel({
-      model:"gemini-pro",
+  if (useUserApiKey && userApiKey !== null) {
+    genAIuser = new GoogleGenerativeAI(userApiKey);
+    const model = genAIuser.getGenerativeModel({
+      model: "gemini-1.5-pro",
       safetySettings
     })
     const prompt = promptString;
@@ -48,9 +48,9 @@ promptRouter.post("/prompt", async (req, res) => {
       res.status(500).json({ success: false, message: "Internal server error" });
     }
   }
-  else{
+  else {
     const model = genAI.getGenerativeModel({
-      model: "gemini-pro",
+      model: "gemini-1.5-pro",
       safetySettings,
     });
     const prompt = promptString;
@@ -90,10 +90,10 @@ promptRouter.post("/generate", async (req, res) => {
     },
   ];
   let genAIuser;
-  if(useUserApiKey && userApiKey!==null){
-    genAIuser=new GoogleGenerativeAI(userApiKey);
-    const model=genAIuser.getGenerativeModel({
-      model:"gemini-pro",
+  if (useUserApiKey && userApiKey !== null) {
+    genAIuser = new GoogleGenerativeAI(userApiKey);
+    const model = genAIuser.getGenerativeModel({
+      model: "gemini-1.5-pro",
       safetySettings
     })
     const prompt = promptString;
@@ -114,9 +114,9 @@ promptRouter.post("/generate", async (req, res) => {
       res.status(500).json({ success: false, message: "Internal server error" });
     }
   }
-  else{
+  else {
     const model = genAI.getGenerativeModel({
-      model: "gemini-pro",
+      model: "gemini-1.5-pro",
       safetySettings,
     });
     try {
