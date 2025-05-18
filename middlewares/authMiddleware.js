@@ -20,4 +20,10 @@ const protect = asyncHandler(async (req, res, next) => {
   }
 });
 
-export { protect };
+// Simple middleware that allows requests through without authentication for now
+const verifyToken = (req, res, next) => {
+  // Just proceed to the next middleware/route handler
+  next();
+};
+
+export { protect, verifyToken };

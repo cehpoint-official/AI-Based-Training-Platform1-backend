@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema({
   email: { type: String, unique: true, required: true },
@@ -6,7 +6,8 @@ const userSchema = new mongoose.Schema({
   password: String,
   profile: {
     type: String,
-    default: "https://firebasestorage.googleapis.com/v0/b/ai-based-training-platfo-ca895.appspot.com/o/user.png?alt=media&token=cdde4ad1-26e7-4edb-9f7b-a3172fbada8d"
+    default:
+      "https://firebasestorage.googleapis.com/v0/b/ai-based-training-platfo-ca895.appspot.com/o/user.png?alt=media&token=cdde4ad1-26e7-4edb-9f7b-a3172fbada8d",
   },
   role: {
     type: String,
@@ -17,10 +18,20 @@ const userSchema = new mongoose.Schema({
   resetPasswordToken: { type: String, default: null },
   resetPasswordExpires: { type: Date, default: null },
   apiKey: { type: String, default: null },
-  unsplashApiKey:{type:String,default:null},
-  userapikey1:{ type: String, default: null },
-  userapikey2:{ type: String, default: null },
-  verified:{ type: Boolean, default: false },
+  unsplashApiKey: { type: String, default: null },
+  userapikey1: { type: String, default: null },
+  userapikey2: { type: String, default: null },
+  verified: { type: Boolean, default: false },
 });
 
-export default mongoose.model("User", userSchema);
+// Try-catch approach to handle model compilation
+let User;
+try {
+  // Try to retrieve existing model
+  User = mongoose.model("User");
+} catch (error) {
+  // Model doesn't exist yet, so create it
+  User = mongoose.model("User", userSchema);
+}
+
+export default User;
